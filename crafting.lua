@@ -572,110 +572,83 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
 
     Event:CreateDivider()
 
-    -- ---- Pet Loadout Slots ----
-    Event:CreateSection("Pet Loadout Slots")
+  
 
-    Event:CreateInput({
-        Name                  = "Orangutan Loadout Slot",
-        CurrentValue          = "",
-        PlaceholderText       = "Slot # with Orangutans equipped",
-        RemoveTextAfterFocusLost = false,
-        Flag                  = "eventOrangutanSlot",
-        Callback              = function(Text)
-            local n = tonumber(Text)
-            if n == 2 then
-                OrangutanSlot = "3"
-            elseif n == 3 then
-                OrangutanSlot = "2"
-            else
-                OrangutanSlot = (Text ~= "" and Text) or nil
-            end
-        end,
-    })
+    -- ===================== UTILITIES TAB =====================
+    local UtilTab = Window:CreateTab("Utilities", "zap")
 
-    Event:CreateInput({
-        Name                  = "Hamster / Forger-mutated Slot",
-        CurrentValue          = "",
-        PlaceholderText       = "Slot # with craft speed boost pets",
-        RemoveTextAfterFocusLost = false,
-        Flag                  = "eventForgerSlot",
-        Callback              = function(Text)
-            local n = tonumber(Text)
-            if n == 2 then
-                ForgerHamsterSlot = "3"
-            elseif n == 3 then
-                ForgerHamsterSlot = "2"
-            else
-                ForgerHamsterSlot = (Text ~= "" and Text) or nil
-            end
-        end,
-    })
+    local AutoHoldSubmitEnabled = false
 
-    Event:CreateInput({
-        Name                  = "Pachycephalosaurus Slot",
-        CurrentValue          = "",
-        PlaceholderText       = "Slot # with Pachys / Pack Mules",
-        RemoveTextAfterFocusLost = false,
-        Flag                  = "eventPachySlot",
-        Callback              = function(Text)
-            local n = tonumber(Text)
-            if n == 2 then
-                PachySlot = "3"
-            elseif n == 3 then
-                PachySlot = "2"
-            else
-                PachySlot = (Text ~= "" and Text) or nil
-            end
-        end,
-    })
-
-    Event:CreateDivider()
-
-    -- ---- Farm Settings ----
-    Event:CreateSection("Farm Settings")
-
-    Event:CreateToggle({
-        Name         = "Hide Plants",
+    UtilTab:CreateToggle({
+        Name         = "Auto Hold & Submit Fruits",
         CurrentValue = false,
-        Flag         = "eventHidePlants",
-        Callback     = function(Value) SetPlantVisibility(Value) end,
-    })
-
-    Event:CreateToggle({
-        Name         = "Hide Cosmetics",
-        CurrentValue = false,
-        Flag         = "eventHideCosmetics",
-        Callback     = function(Value) SetCosmeticVisibility(Value) end,
-    })
-
-    Event:CreateToggle({
-        Name         = "Disable 3D Rendering",
-        CurrentValue = false,
-        Flag         = "eventDisable3D",
+        Flag         = "eventAutoHoldSubmit",
         Callback     = function(Value)
-            RunService:Set3dRenderingEnabled(not Value)
-        end,
-    })
+            AutoHoldSubmitEnabled = Value
+            task.spawn(function()
+                local ActivationRemote = safeWaitPath(LocalPlayer, 15,
+                    "PlayerScripts", "InputGateway", "Activation")
+                if not ActivationRemote then
+                    notify("Utilities Error", "Activation remote not found.", 8)
+                    return
+                end
 
-    Event:CreateButton({
-        Name     = "Hide All GUIs (rejoin to undo)",
-        Callback = function()
-            for _, Element in pairs(PlayerGui:GetChildren()) do
-                if Element:IsA("ScreenGui") then
-                    if Element.Name == "Sheckles_UI" or Element.Name == "ChocCoinCurrency_UI" then
-                        Element:Destroy()
+                local GameEventsFolder = getGameEvents()
+                local SubmitRemote = GameEventsFolder
+                    and safeWaitPath(GameEventsFolder, 10, "SummerFire", "Submit")
+                if not SubmitRemote then
+                    notify("Utilities Error", "SummerFire Submit remote not found.", 8)
+                    return
+                end
+
+                while AutoHoldSubmitEnabled do
+                    local character = LocalPlayer.Character
+                    local backpack  = LocalPlayer:FindFirstChild("Backpack")
+                    local foundFruit = false
+
+                    if character and backpack then
+                        for _, item in ipairs(backpack:GetChildren()) do
+                            if item:IsA("Tool") then
+                                local name = item.Name:lower()
+                                if not name:find("seed")
+                                    and not name:find("sprinkler")
+                                    and not name:find("can")
+                                    and not name:find("crate")
+                                    and not name:find("tool")
+                                    and not name:find("pet")
+                                    and not name:find("egg")
+                                    and not name:find("ticket")
+                                then
+                                    item.Parent = character
+                                    foundFruit = true
+                                    task.wait(0.1)
+                                    break
+                                end
+                            end
+                        end
+
+                        if not foundFruit then
+                            local Humanoid = character:FindFirstChildOfClass("Humanoid")
+                            if Humanoid then Humanoid:UnequipTools() end
+                        end
+                    end
+
+                    if foundFruit then
+                        local fakeCFrame = CFrame.new(
+                            -184.319519, 0, 43.1255341,
+                            0.830478072, 0.265547037, -0.489684522,
+                            -0, 0.879065394, 0.47670123,
+                            0.557051301, -0.395889908, 0.730044544
+                        )
+                        ActivationRemote:FireServer(true, fakeCFrame)
+                        task.wait(0.1)
+                        SubmitRemote:FireServer()
+                        task.wait(0.4)
                     else
-                        Element.Enabled = false
+                        task.wait(1)
                     end
                 end
-            end
-        end,
-    })
-
-    Event:CreateButton({
-        Name     = "Rejoin Game",
-        Callback = function()
-            TeleportService:Teleport(game.PlaceId, LocalPlayer)
+            end)
         end,
     })
 end
