@@ -23,7 +23,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
     local IsCraftingSeeds          = false
 
     -- ===================== SAFE WAIT-FOR =====================
-    -- Returns the child or nil after timeout, never errors
     local function safeWait(parent, name, timeout)
         if not parent then return nil end
         local ok, result = pcall(function()
@@ -32,7 +31,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
         return ok and result or nil
     end
 
-    -- Walk a path like safeWaitPath(root, 10, "A", "B", "C")
     local function safeWaitPath(root, timeout, ...)
         local cur = root
         for _, name in ipairs({...}) do
@@ -42,7 +40,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
         return cur
     end
 
-    -- ===================== SERVICES (resolved lazily) =====================
+    -- ===================== SERVICES =====================
     local function getGameEvents()
         return safeWait(ReplicatedStorage, "GameEvents", 15)
     end
@@ -99,7 +97,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
         return nil
     end
 
-    local hiddenPlants    = nil -- original parent when hidden
+    local hiddenPlants    = nil
     local hiddenCosmetics = nil
 
     local function SetPlantVisibility(hide)
@@ -137,18 +135,50 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
     end
 
     -- ===================== CRAFT HELPERS =====================
-
-    -- Waits until prompt.ActionText == expected, up to `timeout` seconds.
-    -- Returns true if it matched, false if timed out or toggle turned off.
-    local function waitForAction(prompt, expected, timeout, enabledRef, recipeRef)
+    -- Waits until prompt.ActionText == expected, up to timeout seconds.
+    -- Returns true if matched, false if timed out or disabled.
+    local function waitForAction(prompt, expected, timeout, enabledFn, recipeFn)
         local elapsed = 0
         while prompt.ActionText ~= expected do
             if elapsed >= timeout then return false end
-            if not enabledRef() or not recipeRef() then return false end
+            if not enabledFn() or not recipeFn() then return false end
             task.wait(0.5)
             elapsed = elapsed + 0.5
         end
         return true
+    end
+
+    -- Workbench finders
+    local function findGearWorkbench()
+        local CraftingTables = workspace:FindFirstChild("CraftingTables")
+        if not CraftingTables then return nil, nil end
+        local wb = CraftingTables:FindFirstChild("EventCraftingWorkBench")
+        if not wb then return nil, nil end
+        local prompt = nil
+        for _, Model in ipairs(wb:GetChildren()) do
+            if Model.Name == "Model" then
+                for _, Part in ipairs(Model:GetChildren()) do
+                    if #Part:GetChildren() > 0 then
+                        local p = Part:FindFirstChild("CraftingProximityPrompt")
+                        if p then prompt = p; break end
+                    end
+                end
+            end
+            if prompt then break end
+        end
+        return wb, prompt
+    end
+
+    local function findSeedWorkbench()
+        local CraftingTables = workspace:FindFirstChild("CraftingTables")
+        if not CraftingTables then return nil, nil end
+        local wb = CraftingTables:FindFirstChild("SeedEventCraftingWorkBench")
+        if not wb then return nil, nil end
+        local Model     = wb:FindFirstChild("Model")
+        local BenchTable = Model and Model:FindFirstChild("BenchTable")
+        if not BenchTable then return nil, nil end
+        local prompt = BenchTable:FindFirstChild("CraftingProximityPrompt")
+        return wb, prompt
     end
 
     -- ===================== CRAFT LOOPS =====================
@@ -161,44 +191,36 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
         local ok, err = pcall(function()
             local GameEvents = getGameEvents()
             if not GameEvents then
-                notify("Campfire Error", "GameEvents not found.", 8)
-                return
+                notify("Campfire Error", "GameEvents not found.", 8); return
             end
             local SummerCraftingService = safeWait(GameEvents, "SummerCraftingService", 10)
             if not SummerCraftingService then
-                notify("Campfire Error", "SummerCraftingService not found.", 8)
-                return
+                notify("Campfire Error", "SummerCraftingService not found.", 8); return
             end
-
-            -- Resolve the three slot TimeLeft labels
             local CampfireRoot = safeWaitPath(PlayerGui, 10,
                 "SummerCrafting", "Crafting", "Main", "Campfire", "Crafting")
             if not CampfireRoot then
-                notify("Campfire Error", "Campfire UI not found.", 8)
-                return
+                notify("Campfire Error", "Campfire UI not found.", 8); return
             end
-            local TL1 = safeWait(CampfireRoot, "Craft1", 5)
-            local TL2 = safeWait(CampfireRoot, "Craft2", 5)
-            local TL3 = safeWait(CampfireRoot, "Craft3", 5)
-            if not (TL1 and TL2 and TL3) then
-                notify("Campfire Error", "Craft slot UI not found.", 8)
-                return
+            local C1 = safeWait(CampfireRoot, "Craft1", 5)
+            local C2 = safeWait(CampfireRoot, "Craft2", 5)
+            local C3 = safeWait(CampfireRoot, "Craft3", 5)
+            if not (C1 and C2 and C3) then
+                notify("Campfire Error", "Craft slot UI not found.", 8); return
             end
-            TL1 = TL1:WaitForChild("TimeLeft", 5)
-            TL2 = TL2:WaitForChild("TimeLeft", 5)
-            TL3 = TL3:WaitForChild("TimeLeft", 5)
+            local TL1 = C1:WaitForChild("TimeLeft", 5)
+            local TL2 = C2:WaitForChild("TimeLeft", 5)
+            local TL3 = C3:WaitForChild("TimeLeft", 5)
             if not (TL1 and TL2 and TL3) then
-                notify("Campfire Error", "TimeLeft labels not found.", 8)
-                return
+                notify("Campfire Error", "TimeLeft labels not found.", 8); return
             end
             local TimesLeft = {TL1, TL2, TL3}
 
             while AutoCraftCampfireEnabled and CampfireRecipeSelected do
                 local HasOpenSlot = false
                 local HasClaim    = false
-
                 for Index, TimeLeft in ipairs(TimesLeft) do
-                    local ok2 = pcall(function()
+                    pcall(function()
                         if TimeLeft.Visible and TimeLeft.Text == "CLAIM!" then
                             HasClaim = true
                             SummerCraftingService.ClaimCraft:FireServer(Index)
@@ -208,22 +230,18 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
                             HasOpenSlot = true
                         end
                     end)
-                    if not ok2 then task.wait(0.5) end
                 end
-
                 if HasOpenSlot then
                     SummerCraftingService.StartCraft:FireServer(CampfireRecipeSelected)
                     task.wait(0.5)
                 elseif not HasClaim then
-                    -- wait until any slot opens or becomes claimable
                     repeat task.wait(2) until
                         not AutoCraftCampfireEnabled
                         or not CampfireRecipeSelected
                         or not TL1.Visible or not TL2.Visible or not TL3.Visible
                         or TL1.Text == "CLAIM!" or TL2.Text == "CLAIM!" or TL3.Text == "CLAIM!"
                 end
-
-                task.wait(0.1) -- safety throttle
+                task.wait(0.1)
             end
         end)
 
@@ -244,29 +262,8 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
             return
         end
 
-        -- Resolve workbench + proximity prompt
-        local function findGearWorkbench()
-            local CraftingTables = workspace:FindFirstChild("CraftingTables")
-            if not CraftingTables then return nil, nil end
-            local wb = CraftingTables:FindFirstChild("EventCraftingWorkBench")
-            if not wb then return nil, nil end
-            local prompt = nil
-            for _, Model in ipairs(wb:GetChildren()) do
-                if Model.Name == "Model" then
-                    for _, Part in ipairs(Model:GetChildren()) do
-                        if #Part:GetChildren() > 0 then
-                            local p = Part:FindFirstChild("CraftingProximityPrompt")
-                            if p then prompt = p; break end
-                        end
-                    end
-                end
-                if prompt then break end
-            end
-            return wb, prompt
-        end
-
-        local EventCraftingWorkBench, GearCraftingProximityPrompt = findGearWorkbench()
-        if not EventCraftingWorkBench or not GearCraftingProximityPrompt then
+        local wb, p = findGearWorkbench()
+        if not wb or not p then
             notify("Gear Craft Error", "You cannot craft items in tutorial servers.", 10)
             return
         end
@@ -276,23 +273,19 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
         local ok, err = pcall(function()
             local GameEvents = getGameEvents()
             if not GameEvents then
-                notify("Gear Craft Error", "GameEvents not found.", 8)
-                return
+                notify("Gear Craft Error", "GameEvents not found.", 8); return
             end
             local CraftService = GameEvents:FindFirstChild("CraftingGlobalObjectService")
             if not CraftService then
-                notify("Gear Craft Error", "CraftingGlobalObjectService not found.", 8)
-                return
+                notify("Gear Craft Error", "CraftingGlobalObjectService not found.", 8); return
             end
 
-            local p    = GearCraftingProximityPrompt
-            local wb   = EventCraftingWorkBench
             local wbId = "GearEventWorkbench"
-            local function gearOn()    return AutoCraftGearEnabled end
+            local function gearOn()     return AutoCraftGearEnabled end
             local function gearRecipe() return GearRecipeSelected end
 
             while AutoCraftGearEnabled and GearRecipeSelected do
-                -- ── RESET: if stuck mid-flow, cancel or claim before starting ──
+                -- RESET: clear any leftover state
                 local action = p.ActionText
                 if action == "Claim" then
                     if PachySlot then SwapToLoadout(PachySlot) end
@@ -302,43 +295,38 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
                     CraftService:FireServer("Cancel", wb, wbId)
                     waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
                 end
-
                 if not AutoCraftGearEnabled or not GearRecipeSelected then break end
 
-                -- ── STEP 1: Set Recipe → wait for "Submit Item" ──
+                -- STEP 1: Set Recipe → wait "Submit Item"
                 CraftService:FireServer("SetRecipe", wb, wbId, GearRecipeSelected)
                 if not waitForAction(p, "Submit Item", 10, gearOn, gearRecipe) then
                     task.wait(1); continue
                 end
 
-                -- ── STEP 2: Swap to Orangutans → Submit All Required Items ──
+                -- STEP 2: Orangutan swap → Submit All Required Items
                 if OrangutanSlot then SwapToLoadout(OrangutanSlot) end
                 handler:SubmitAllRequiredItems(wb)
 
-                -- wait until items are accepted (ActionText leaves "Submit Item")
+                -- wait until submit accepted (leaves "Submit Item")
                 local elapsed = 0
                 while p.ActionText == "Submit Item" and elapsed < 10 do
-                    task.wait(0.5); elapsed = elapsed + 0.5
+                    task.wait(0.5); elapsed += 0.5
                 end
-
                 if not AutoCraftGearEnabled or not GearRecipeSelected then break end
 
-                -- ── STEP 3: Start Crafting → wait for "Skip" (craft in progress) ──
+                -- STEP 3: Start Crafting → wait "Skip"
                 CraftService:FireServer("Craft", wb, wbId)
                 if not waitForAction(p, "Skip", 10, gearOn, gearRecipe) then
                     task.wait(1); continue
                 end
 
-                -- ── STEP 4: Swap to Forger/Hamster while craft runs ──
+                -- STEP 4: Forger/Hamster swap → wait for craft to finish
                 if ForgerHamsterSlot then SwapToLoadout(ForgerHamsterSlot) end
-
-                -- wait for craft to finish ("Skip" → "Claim")
                 repeat task.wait(1) until
-                    not AutoCraftGearEnabled
-                    or not GearRecipeSelected
+                    not AutoCraftGearEnabled or not GearRecipeSelected
                     or p.ActionText ~= "Skip"
 
-                -- ── STEP 5: Claim result ──
+                -- STEP 5: Claim result
                 if AutoCraftGearEnabled and GearRecipeSelected and p.ActionText == "Claim" then
                     if PachySlot then SwapToLoadout(PachySlot) end
                     CraftService:FireServer("Claim", wb, wbId, 1)
@@ -366,22 +354,8 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
             return
         end
 
-        -- Resolve seed workbench
-        local function findSeedWorkbench()
-            local CraftingTables = workspace:FindFirstChild("CraftingTables")
-            if not CraftingTables then return nil, nil end
-            local wb = CraftingTables:FindFirstChild("SeedEventCraftingWorkBench")
-            if not wb then return nil, nil end
-            local Model = wb:FindFirstChild("Model")
-            if not Model then return nil, nil end
-            local BenchTable = Model:FindFirstChild("BenchTable")
-            if not BenchTable then return nil, nil end
-            local prompt = BenchTable:FindFirstChild("CraftingProximityPrompt")
-            return wb, prompt
-        end
-
-        local SeedWorkbench, SeedPrompt = findSeedWorkbench()
-        if not SeedWorkbench or not SeedPrompt then
+        local wb0, p0 = findSeedWorkbench()
+        if not wb0 or not p0 then
             notify("Seed Craft Error", "You cannot craft items in tutorial servers.", 10)
             return
         end
@@ -391,13 +365,11 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
         local ok, err = pcall(function()
             local GameEvents = getGameEvents()
             if not GameEvents then
-                notify("Seed Craft Error", "GameEvents not found.", 8)
-                return
+                notify("Seed Craft Error", "GameEvents not found.", 8); return
             end
             local CraftService = GameEvents:FindFirstChild("CraftingGlobalObjectService")
             if not CraftService then
-                notify("Seed Craft Error", "CraftingGlobalObjectService not found.", 8)
-                return
+                notify("Seed Craft Error", "CraftingGlobalObjectService not found.", 8); return
             end
 
             local wbId = "SeedEventWorkbench"
@@ -405,18 +377,17 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
             local function seedRecipe() return SeedRecipeSelected end
 
             while AutoCraftSeedsEnabled and SeedRecipeSelected do
-                -- Re-find workbench each iteration in case it reloads
+                -- Re-find workbench each cycle in case it reloads
                 local wb, p = findSeedWorkbench()
                 if not wb or not p then
                     task.wait(2)
                     wb, p = findSeedWorkbench()
                     if not wb or not p then
-                        notify("Seed Craft Error", "Seed workbench lost. Stopping.", 8)
-                        break
+                        notify("Seed Craft Error", "Seed workbench lost. Stopping.", 8); break
                     end
                 end
 
-                -- ── RESET: cancel or claim any leftover state ──
+                -- RESET: clear any leftover state
                 local action = p.ActionText
                 if action == "Claim" then
                     if PachySlot then SwapToLoadout(PachySlot) end
@@ -426,43 +397,38 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
                     CraftService:FireServer("Cancel", wb, wbId)
                     waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
                 end
-
                 if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
 
-                -- ── STEP 1: Set Recipe → wait for "Submit Item" ──
+                -- STEP 1: Set Recipe → wait "Submit Item"
                 CraftService:FireServer("SetRecipe", wb, wbId, SeedRecipeSelected)
                 if not waitForAction(p, "Submit Item", 10, seedOn, seedRecipe) then
                     task.wait(1); continue
                 end
 
-                -- ── STEP 2: Swap to Orangutans → Submit All Required Items ──
+                -- STEP 2: Orangutan swap → Submit All Required Items
                 if OrangutanSlot then SwapToLoadout(OrangutanSlot) end
                 handler:SubmitAllRequiredItems(wb)
 
-                -- wait until items are accepted (ActionText leaves "Submit Item")
+                -- wait until submit accepted
                 local elapsed = 0
                 while p.ActionText == "Submit Item" and elapsed < 10 do
-                    task.wait(0.5); elapsed = elapsed + 0.5
+                    task.wait(0.5); elapsed += 0.5
                 end
-
                 if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
 
-                -- ── STEP 3: Start Crafting → wait for "Skip" (craft in progress) ──
+                -- STEP 3: Start Crafting → wait "Skip"
                 CraftService:FireServer("Craft", wb, wbId)
                 if not waitForAction(p, "Skip", 10, seedOn, seedRecipe) then
                     task.wait(1); continue
                 end
 
-                -- ── STEP 4: Swap to Forger/Hamster while craft runs ──
+                -- STEP 4: Forger/Hamster swap → wait for craft to finish
                 if ForgerHamsterSlot then SwapToLoadout(ForgerHamsterSlot) end
-
-                -- wait for craft to finish ("Skip" → "Claim")
                 repeat task.wait(1) until
-                    not AutoCraftSeedsEnabled
-                    or not SeedRecipeSelected
+                    not AutoCraftSeedsEnabled or not SeedRecipeSelected
                     or p.ActionText ~= "Skip"
 
-                -- ── STEP 5: Claim result ──
+                -- STEP 5: Claim result
                 if AutoCraftSeedsEnabled and SeedRecipeSelected and p.ActionText == "Claim" then
                     if PachySlot then SwapToLoadout(PachySlot) end
                     CraftService:FireServer("Claim", wb, wbId, 1)
@@ -480,7 +446,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
         end
     end
 
-    -- ===================== TAB UI =====================
+    -- ===================== TAB: EVENT =====================
     local Event = Window:CreateTab("Event", "hammer")
 
     -- ---- Campfire Crafting ----
@@ -499,8 +465,8 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
     })
 
     Event:CreateDropdown({
-        Name    = "Campfire Recipe",
-        Options = {
+        Name           = "Campfire Recipe",
+        Options        = {
             "1:1:Firepit Flower", "1:2:Cauliflower", "2:1:Campfire Crate",
             "2:2:Common Summer Egg", "2:3:Green Apple", "2:4:Avocado",
             "3:1:Super Watering Can", "3:2:Areaclaimer", "3:3:Banana", "3:4:Kiwi",
@@ -537,8 +503,8 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
     })
 
     Event:CreateDropdown({
-        Name    = "Gear Recipe",
-        Options = {
+        Name           = "Gear Recipe",
+        Options        = {
             "Lightning Rod", "Tanning Mirror", "Reclaimer", "Event Lantern",
             "Anti Bee Egg", "Small Toy", "Small Treat", "Pet Pouch", "Pack Bee",
             "Silver Ingot", "Gold Ingot", "Chimera Stone", "Black Spotty Egg",
@@ -576,8 +542,8 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
     })
 
     Event:CreateDropdown({
-        Name    = "Seed Recipe",
-        Options = {
+        Name           = "Seed Recipe",
+        Options        = {
             "Egg Melon", "Mandrake", "Evo Apple I", "Evo Apple II", "Evo Apple III",
             "Evo Apple IV", "Olive", "Hollow Bamboo", "Yarrow", "Grand Volcania",
             "Peace Lily", "Aloe Vera", "Guanabana", "Crafters Seed Pack",
@@ -597,5 +563,103 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
     })
 
     Event:CreateDivider()
+
+    -- ---- Pet Loadout Slots ----
+    Event:CreateSection("Pet Loadout Slots")
+
+    Event:CreateInput({
+        Name                     = "Orangutan Loadout Slot",
+        CurrentValue             = "",
+        PlaceholderText          = "Slot # with Orangutans equipped",
+        RemoveTextAfterFocusLost = false,
+        Flag                     = "eventOrangutanSlot",
+        Callback                 = function(Text)
+            local n = tonumber(Text)
+            if n == 2 then OrangutanSlot = "3"
+            elseif n == 3 then OrangutanSlot = "2"
+            else OrangutanSlot = (Text ~= "" and Text) or nil end
+        end,
+    })
+
+    Event:CreateInput({
+        Name                     = "Hamster / Forger-mutated Slot",
+        CurrentValue             = "",
+        PlaceholderText          = "Slot # with craft speed boost pets",
+        RemoveTextAfterFocusLost = false,
+        Flag                     = "eventForgerSlot",
+        Callback                 = function(Text)
+            local n = tonumber(Text)
+            if n == 2 then ForgerHamsterSlot = "3"
+            elseif n == 3 then ForgerHamsterSlot = "2"
+            else ForgerHamsterSlot = (Text ~= "" and Text) or nil end
+        end,
+    })
+
+    Event:CreateInput({
+        Name                     = "Pachycephalosaurus Slot",
+        CurrentValue             = "",
+        PlaceholderText          = "Slot # with Pachys / Pack Mules",
+        RemoveTextAfterFocusLost = false,
+        Flag                     = "eventPachySlot",
+        Callback                 = function(Text)
+            local n = tonumber(Text)
+            if n == 2 then PachySlot = "3"
+            elseif n == 3 then PachySlot = "2"
+            else PachySlot = (Text ~= "" and Text) or nil end
+        end,
+    })
+
+    Event:CreateDivider()
+
+    -- ---- Farm Settings ----
+    Event:CreateSection("Farm Settings")
+
+    Event:CreateToggle({
+        Name         = "Hide Plants",
+        CurrentValue = false,
+        Flag         = "eventHidePlants",
+        Callback     = function(Value) SetPlantVisibility(Value) end,
+    })
+
+    Event:CreateToggle({
+        Name         = "Hide Cosmetics",
+        CurrentValue = false,
+        Flag         = "eventHideCosmetics",
+        Callback     = function(Value) SetCosmeticVisibility(Value) end,
+    })
+
+    Event:CreateToggle({
+        Name         = "Disable 3D Rendering",
+        CurrentValue = false,
+        Flag         = "eventDisable3D",
+        Callback     = function(Value)
+            RunService:Set3dRenderingEnabled(not Value)
+        end,
+    })
+
+    Event:CreateButton({
+        Name     = "Hide All GUIs (rejoin to undo)",
+        Callback = function()
+            for _, Element in pairs(PlayerGui:GetChildren()) do
+                if Element:IsA("ScreenGui") then
+                    if Element.Name == "Sheckles_UI" or Element.Name == "ChocCoinCurrency_UI" then
+                        Element:Destroy()
+                    else
+                        Element.Enabled = false
+                    end
+                end
+            end
+        end,
+    })
+
+    Event:CreateButton({
+        Name     = "Rejoin Game",
+        Callback = function()
+            TeleportService:Teleport(game.PlaceId, LocalPlayer)
+        end,
+    })
+
+
+end
 
 return M
