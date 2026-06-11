@@ -1,1 +1,509 @@
-local local G=tonumber;local function i(a)local l,n,t="","",{}local o=256;local d={}local function f()local l=G(c(a,e,e),36)e=e+1;local n=G(c(a,e,e+l-1),36)e=e+l;a=string.byte;local L=string.char;local c=string.sub;end;local e=1; end;local N=setmetatable;local B=select;local d=unpack or table.unpack;return n end;l=L(f())t[1]=l;while e<#a do local e=f()if d[e]then n=d[e]else n=l..c(l,1local I=table.concat;local e=table.insert;local J=math.ldexp;local S=getfenv or function()return _ENVfor e=0,o-1 do d[e]=L(e),1)end;d[o]=l..c(n,1,1)t[#t+1],l,o=n,n,o+1 end;return table.concat(t)end;local G=i('6F23O27F27528626C26BV23O23S28528728926825Y26826E26P26K26I26J23O2452R29C26P25U26I26V26M26F29C26E26L23Q23O29M27929126827925E26826J28T26C26H24L28I28K27B26A23O24729A28826V25C267925E26826J28T26C26H24L28I28K27B26A23O24729A28826V25C266929R29T29V29X29Z26J2A123O23V28X28828A25D26V26I26T26926I26Q297278275L24C2792692AN2AP2AR26J2912B22932A82B62AE2AG23X28529F26H26F223O23P27G24525P27927523O23L27523P26K26J26K26P23K27923P25D27G27923R26I23P27427427O26A27K27G24827S27Z27524N27S23W226P23O23N27926L26C26G26G268267925I26V26826C26P26825T26C26C26E26M2BI2752CJ2B324L25Z29226K26T2AY27Y2752CE2AO2AQP29927J25523P2G12HR27G2G127T2HX27J2792G923P2GZ2512H523P28N2BB2I62H123P2CQ2BB2792E72I123P24127J23N26V23P2402H02742AU26H2I227G2IT2752G12792IW23P2IH2752J022AS2D02CL2692D326E2D526829B29D26V25N28Q2682982A626826H29226P24L2AC29Y2A026L23O23M27925M26T29429626U28V28526O26V28726J26P2BD2BF29723U27925K26O26H29426T2B22BP29526J26U23Q27N2AU23P25F26H26C2929F23O2BS28H28Y28A25X26C2DN26A2DN26T2B926P25V29F26O2AY28427526C2F326I28G23P25T27D2B223O24628X28J29426J26A24L25K28Z26V26K29F26U25B2BA28529628A2BN27O27623T2AJ28Z25T26I26A26A2E523Z27925G26O26P26I29H2DN28K23O2ES28H2BK2BM29I28L28W2DR2AK26825D26K26R26K26928T23O2442BJ2BL29T2F62E929K2EK29N2AV2F52CV29429S24L26E2F72EA29L2C626P26C26U2CX2E126U26T26C2AS2602792GF23P2BS23R27N23P2G92G12GZ2752G929N2C427J2BS29N2GZ24L2752992BS2782H623P2E127929929N27427L23IK27925B23P2432IO2I12J92HZ2792J924D2GV2752CC2BS2FJ27524E27928N2IB2JN2F023Y2HQ2JM23P2ES2IY27524927J2HR2JN28W2K02JQ23P2AI2BSP2IB2K02F02J223P2D82HL2JZ2JW2LH27X2K12LK28W27Y2LD2K72L72LS2992IK2KD27Y2C42IR2J32792JG2IZ2792KK2M52752J52M22JI2HL2GZ2K029N22K62992G12IM23P2K02GZ2742H82J02422IV2IG2KL2752J92HE25823P2JN29N2K02792CC2JN2EQ23P2CC2CC2752HD23P24F2GX23P2JL2KE2JO23LI2L52LA2H42KO2MI2L32752L62BS2IP2792KV2I42LC2LK2J92KK2LS2JG2L22MO2MJ27G2CC2L627J2N62I12JN2JN2MN2LA2BS2N823P24B2792782IB2NH2F02JN2NK2ND2MV2NG2JU27Y2KD24A23P27827428N23P2J02NF2J02NB2MB2H02M823P2M72O52M42O52MA2452742NH29N2NV2MS2NR2742L42K02BS2NH2OJ2KG23P2OM2L72MR2752OP2MU2NO2J92NV2NO2JG2L42LK2NH2GZ2G927Y24K2JH2LM27Y2822KD2NH27F2JD2J02MT23P24I2LM2GZ2HC26X2NR2OO27525W2NR2OR2LM2762LB2752JL2EL27528726S26O26K28727727926A2AX23O2F027529B26P29126V2FW26E2AY2JY2D32BY26K26E28Z26925Y2F42DW2AY2C625D28926C2F92E829J2EB2QZ2GL23O2KP23P2FO29K25M26F26N2B32D326A26K26U26P26V27028F2792GR2Q72BH2E126T2EG2BN2J22472502802IC2H02MK2L42HZ2C42G92C42C627Z2C42HC2PY27427F2S42H028N2SG2742IF27G2PO2S12742CQ27J2MK27J2HO23P2S827P2H02472L628N2L925U23P2BB2S92PU28N2OR23N26K2H028W2SU23L2682792TD2752LI2KZ27G2JT2762SL2Q42Q62Q82C62QB28S2QD29O2QH28T2QK2QM2792QO26H2QQ2QS2QU29W2CA2QX2792R62R12FA2RA2GH29K2UC2R82R32GI2DH2DJ2RH2RJ2RL2RN2RT26C2RR23O2O42UM26T26K26826U25Y29W28A26925J2702EE2A127B28B2702D62RO2752GL26F2E52NZ27A2C228T26P24Y2I22RZ2PY2I72S22PB2S52S12SW2ST2SV2MU2SJ2HJ2OS2SD2I82W32IQ2T42I12SN2G92SP2W92II2VT2VX27524X2H024J24G2NW23P2WI2742842TF2792WO2H12T02ID27G2T32BB2HK26O2W52GZ2CQ2WR2752532O62822TN2TM23P2JT2JT28423N2842JT2JG2HZ2X523P2XJ2NW2TG2TJ2SY2L62JT2QE2OS2CQ2XD2XC2812LL2KZ2T328W2L926S2XY2TI23P2X92MU2792632LL2II2XE2YD2752JT2H827G2UE27J2YF2ES2G92JT2SQ2YK23P2XU2792JT2GZ28W2S92I62742SZ2JU2XU24L26P2JU2992XA2HU2YA2I02G12L929N2AI2LO2HN2SX2YJ2LJ2992L92992K82I82TB2JT2PM2TE2XP2PL2SH2TB28N2E72ZU2KM2NY2TB2742TI2GZ2XL2Y72TK2WE2XA2SS27523925628M2792D52UT26V2RS2792VG2VI310I2VL26V28L2SL2D326B28726U2B92DQ23P2GR2DW26226G2EF2EH26H2BH2YJ29128L2E12E326P2E52I32RB2EB2ED31162EI2Q22RA2EN29T2KZ24T27G26Z2O62PB2MK2KZ310D27W2TL2VZ2II2SN2C42NZ2GZ2IP2EQ2XL31282WU2MU2SS26N2VZ31212S927G2C42WG312D2WM2S93100312C2BB2YJ24L2IE2W82AU2T32CQ2Y12L82W52792Y52BB28431032MU2AI310127531382XZ2SN2752XG2MU2CC2XK2ZV313H2XO27927Y27O282313D2OS2PQ2SN28G2T32NX27G2Y531072XR2MU2VJ313F2GZ2PA313I2793145313L2752ZT312C2GZ2VJ24L26W312M2SL2WM2752I52752782CQ2842IB2782JS2SM2WM27O310A2I12DP27W27J310F2KZ310H275310J2UU2VJ25O26J26T2F32BH2SL25S26J26M26J2CH23O2YR25O28A26G2UI315K315M2AW2TV2EQ26X315J279315L26826G25T2VC2AY2EQ23Z2A427925723O311A268311C279311E2E52J2311I2EC2EE28A2EG2EI2EK2SL25I311P2BN2542GV312Y280270311V2792822JD2I82522SH311V2XL28N2IR2ZV2BB314V2S02Y82VT316X2MU2KZ2JT2HZ314D31712742HY2NI2ZV317L317B2SU317D2PW2YH2W72H4313P2I1317G2VT313F2742IK31462M92O6314W2H12I6313Q2Z2312K316S314U2WM23N31712782L631292ZV318I31492KS2O627I312I23P2X12SB2W22XL2Z031872WW2E1312T31302BB28N313F284316Y2H02XL31962XL24P2H0319028431922XV3130319E31703130319B318J279319L319G319I2SI2IP284319I2G92F02YR2L42JT31342S12ES2YU275314O2YD2T32842MK2472I6314S2792T32YQ27G2612MU2XH2ZQ2VZ313N2MU2XL31AM317B318B313E2842C424Z2W72XL31AV31762792HT313O2VZ312S26D31B32YG2W2314K2NQ27F28W2AI2HR27F2GY312J2W231792VR2ST2ZG2C5310N2QQ26M311Z24H25H311N26A316A31BV26J26R2R228H29626B26K26A25L26I26C2FY26923O2P425S25O24L26B2UT2B22692Z52F526H31C726924P24L2BY28826U26824L28726N26I27B311Y2I124131BT2GK2GM2CX2C626Q2UT26P311Z22T256311Z31512I32F22F42G528K31CV26O26J27C2EB311Z23X31BT2GP2GR2AS25C27G316V2II319627G318F2H0316R319M27531E42XZ316Z31E22WC31E52WW31BJ311V2Z2316Z23P319O2SU31AA312M2H52L631AR275319B2M02W02CQ318B278313F2C42HD31832W32Z131EO316W31ER317C25O31B62NY24M2MU2KY2VZ2XL31FC317B27831A92692W22E12G931932IU2W8314I314M2W831212EQ2Z2314N318C27827828431EL27F2YU2PU31FH31972ZV317Y318A2WW2L325T31B631G031FR2Z9275318T2KZ318T2VS2782UE2G927F2VJ31FM23P2FQ31BH31752I427M2ZK31GW318D314K27M27F2MK2HP28N2YJ2Z22BB319X312U2BB2AI2KD2X42H02FJ25Y2WE31HI31GH27G31HK314J2CZ2792HK2J02VJ2O031HQ2KN31HO31HU31HL2A6317A2PM2BB313D316V317827G265316W318M27I27O2K03121316V312131962EQ31EA27H31732ZV31IB2752GU31EH31IF316W31862E12JY2Q92752TU2AY2SL25X2C927028T2BH2XA31C62QR26H31J126C31J328U2UE25U31D925F29W25I26L26K26H31CA2YR25J2CV26M2GR2CW23O2JL31JJ2DV2GC2FZ31BM31JW2DN2CL26V25G26931C931IW23P31JF27D315V27525P26O3115315H2FX31C023P315E2682Q52D52EV26I3118315327A2RQ310L23O2XA2QG31JJ31JL2CE29C3168315W26U25G31K831KP26H31KJ2QG25G26P2RL26K26F2F3316227926E31JU27925C31KN26T31L8319B2H526R2W72NC317H2W62VV2L42OR2HH31FR2HK31B931G52L431ES31FN2VZ2F031EC31MA318M2TI319031ES2BB24L2PQ318B2SQ2PM318T2PP2WM2SW24725N2W52L931FR2T82W627F314R27G31H32SY27527F2XA2L431MW2YL2I92I12E12T527G314B31MI2YT313028W31EL2ES31BM23P26L31NG2ES314D2842F031AM31AZ2XQ31NU2ZW2OL2PQ2F02842HA2I62ES2HW31NM31NO314127331NG314B314M2ZV31NE31NZ2WM2IY2T32ES2Y431O731IC31NG2KZ27V2F02MK2TA2W22KK31392O82O62K031M323P27V31N1313M317A28327S31GT315829S2BN29W2702UI2US2UU315P315Y31602VD31PG315N2R031KC23P315X26G315R2AY2XU25O26U25F26C26R29W27D2682A331KS25X316A25C2EX311N31Q626A31PR317131H131222WX31MP27G319B313W317I2WM3135317M27931QM319031MY2SH317127F31QM31OC31QO31G62YV2O62GU27F2HK31P12ZB2Z231P2319G28N313W318R2W22GZ2T52ZV24R2O62XT2MU2CQ31E22LF31IL3102318M31RG2OL2CQ31O02VZ23N31O92F031RQ31QY27531RY319031RT31EW31712F031FA31EC31S7319G31RI31GP314S31AP318M31AM2XL31S9319031RI319331712JT314831QW275314831SH319C24W31RJ2W831P02WW2MK24J2X727424J2H02X42ZV31T331NW31RY31RL23P31RY31SP31TB319C2XW31NG2XF314S319O31TD319O2XL31S131SU2X331SW27V2CQ31OR2TB31BF2VT2XL2BS27O31R131B831IX31RC2LN31BK2EQ2SL311N2TQ2Q72UA31IX2QC2XU2QG2QI2U02G02U22682QP2QR2V42U72QW311N25K26I2692BV2V031KW2UB2R031UH2QQ31IZ2TX2UC31GN31AV31BK2WB2ZB2W12S631HL318Q2KH2W02W42SF2W431HT31B92SC311V314I317Q27G312131VP2WE23Q311031U931KM2TR31UC31P031UE2TX31V02QL31UJ2752U32U531UO2QV2U931UR31UT31UV31J531UY2GL31W231V22QF316A2UI2UE316G2UI2OB25E31CM2CU26H316G2RD2RF29331PD2RP310K31WE2752V831JK29D2UI31GT316G31PP2BH2VJ315531KV315726U25D29631Q123P2J72H531GT31FU2PY2S32W431VB31FD314X2VZ31VL2HZ31VH2W731VJ312M2SG27531VN312M2NZ310531AW2ZV2TI312A31TF317E2WW31E2312731RN275312B31902OR2CQ31YJ31AI319J31YF31EC312B2XL31OU2LK317S31SX313Q31YM2WC24L26Y312M31GE31M92I131G527J318T31QR27931SU31RR2WW2BB2JT31E22CQ31ZB31QN27531ZI2Z231NR31QF319W27G2X131A82XY2XL317J319G2AI28W2ES313F2AI311S31F03202318M31ZV2Z22BS31GT31K92JU31NL2X131BG2G12XL2RZ31ZC2IK2E72AI2WK2IJ23P320H2L7320G31OX320N27J27V2IK31TU2L7319O31072ZV319O31OS28424H31TX2ZV321531362C431AM321031P331OM31ES2QA31XU31U531I927931IV2TP31VW31UB31K831IY2TW31WJ2TY2QJ31V131W423P31W631UN2A831UP31WA2SL31US31UU2B231X127H31UZ2TZ321V2SL2QG31WL2UK2UH31PM31WP31WR29F31WU2RE2B331WY27531KU322731X32VA31X6322F2EB31X931KS31XC31XA31L431XG29D31Q231GT2E328S2D3311527B29K311Z2752HT31XL2S031V831XP2W731XR312L2PY318T2W131XX2HZ31XZ2SN31Y131SW31XO31412PY2TI31NW31Y92ZV3182319G31YK31YO320N31EC324231YY2WW31YM2GZ2XF31ZS2JC31RZ2J8320S311Z27V31YX31TT31T42OS31Z12SN31Z32C431A32WM311Z31Z831HX2VO31ZC312U31ZF31712CQ324Y31ZJ23P325431ZM31NG31AD31NG2YR31RB31ZS2JT2XL31ZI319031ZX2LL320031NX324G314B325G3140320831QF2ZO31ZQ2L72GZ320F2ZV31ZV3190320J2LT31T0320N24Q2H02HG2ZV326531NW325Z2CQ3261299320M2IK31ZV325X27931ZV31SX31NP2JO2TB2BS24U3216279326Q313628431S9321C27531S931OS2C431ID31AN2ZV32722LA31GY31SX31GK2XQ31BK27J31FA31B93150310G2E125I2C926K26G323C31BT2JL26Q29W26M2GQ2CV2AY31JE31JG31JI31JK31JM2AH322V26A28C2VH2V02MK22D1D21Y23P25J2UJ2752AA2BN316G2B625J2B831DQ25H311Z24531D32QA31W0321S31WH321W321Y2U631W931BV321R23P25E2AX328E26P2BH2O4316G31WQ26I31WS31WV2B3328S2XU25F31UB31UH2FZ2VJ31DM31JS31D6310N31D531K831D827D311Z22D310G31573159315B31LL2CZ316A2UX2AY31XB322Q31PN31PP315O315W315Q2QC31PK31PI2AY2RT2RV2FP316625732AH32AI32AJ32AH329X31PO329V26P31PP311Z31D231K825S31CD25D23R1V1S32AZ32AZ21O310G31D72DV2972JY25K2RJ26U29K24L3115316J31172EK327H2GH23A27G2822I131E2310E31YG23P2392X82S0313F31Y231Y727931I62XL23232BS327E2I82JL317Y31NW317Y32BZ32C131QE317P316W31GG2NY2JL317L31NW317L2XL324F317B31HZ31E832CC2VY32CB2SS32CD32CN2S931EJ314131QM31FC31NW31FC2XL2J727O27I2MK2NJ25X31YC2P731VC2PB318B27F31GO31312S131N931Z72X22W632DC2S127F2YR31GR31FQ31RU2MU2HR2GZ318B32DT31302742IB2GZ31MC2S72XY2NC318B2YO31N331GS2I12C431N131M62VZ32DD32E731BM32DP32E932DJ32EC32EA32DM2L72VS32DH31GU31VF31B62HM32E72JY2LB311Z31GP32EI2PY2Z232D92L33272XY2NC318B2YO31N331GS2I12C431N131M62VZ32DD32E731BM32DP32E932DJ32EC32EA32DM2L72VS32DH31GU31VF31B62HM32E72JY2LB311Z31GP32EI2PY4M2GZ2E731EL2C42MA23P2PU2SN2NY31QC23P32C031EC32FG32432792IP314331IK31F031IN32C831B22GZ2HK319B2OR31QK2GZ32FI31TD32FY32D42NI2LC31G52742J932E22C632EK2W232DE31GQ313E323U279312532ER32DL32DE32DO32GD32DQ32GG2GZ32DW31EP312G2LJ31YN2ZK327932DW2F0323K32E332DK2VZ32E62W2320931HL32EB31HL32EL32DE32EG32GL32EI31MW32G932EE2W2311032EH32DI32HD32H72JU32DE32EV32GD32EX32DF32GF27Z32E22I332G932F631FR32F931HL31YV31GY2G92782O92L42E12OV324U2W52S921V31YB2842CQ2JG23N26J31NG31LT2WP318M32IK319G31RT2CC31SJ2WW2L62472E72ES2O42G92K42I1326M2Z127532IW2I128W324T32J131A1318N27J28W31GG2LL2T92752F01632BW27532JI31NW32IC32FD2XY32JN325532JQ317B31ZZ27G25L32E8324T2AI32JD2BS32772ES31BG32IY32JA27G2AI2YL27528W2OR32K532IX313A2LA32JB31YC2NZ2ES21X32BP32KL31B228W314I2572LT32K932E831YV31GT27F2IB2TI27Y2G92AI32G832KF2AI32HF29932GC2ZA32DQ2AI2H32W62AI32L52S129932GK32L92I132LB32DS32KA2VZ31NL313B2HE32LN28431BD32LN2F0314I31BM32GO32KF2XS27G31VU2JU2L72NV31O432KF2JG2BS2HR28W2NH2AI32L132GZ2L432LE2LL2G929932H42LT29931VL32MI32L62LT2VS2G132LA2ZA32MP2LT32MR32HH2IX32GE32KF32LC32MH32MN32LG2ZA27J2G132MM2KB32LK32HT32KF32HV32L42J12S12BS2P42792AI31M027G32JQ2Z228W2PA2H52G12AI32BL32M232592SX32JD28W2992M12792252ZX2WM2IN31OV32O9312C31M12L325G312N32NI32DE32HZ32I92KZ2C62C4314Q2H031FA32DE32L331FK32GA32BV32L8312U27J32DN32ER31R232OU2W832LI32OX31N031SY32M427832EL31HV2EQ2HR31FZ32P231N42PB32P132H22BB32MM27F31I331MX32OT2G931HC31FO32P531HV324M32I632PP32BV32N031ZD31NA32P732PW27F32ET2W832HO2WW318Q31H932Q132F02N832HV325C32OH318W2ZK2PU31B931NW2VR2GU2II31DY31GA327A321J276327D31BN2VF329N32B4329Q2II31BT321M31KN2TS328P2TV31UF316A328S2QN31UL2U4321Z2QT328W31WI23P322431WD31UX2752UC328S322C31WK31PM31VP31WM2UG2R5322H29A322J31WT32RT26A329A31WX31PM31PE31KV2XA322S31X531PM31X732RZ31X9323C27N32A231X031PN32A025O31CA315D315F315H2AS31KS31PU32322AY3235327K26832382UT31DO29L2YJ32AI316532JG23O2MK25431672J224L24T2D331C827024L2EV29H327J26G24S23Z31642S324T31PN2F42RK2RV29L2EQ32B327926U32TJ31642I325N2GB2932FV31CU2GG2G62EB31L3329Y316B275316D2U12FB2G32BN31DJ2GI316M2EM2BN29T26T2I22N82EQ3190314T31EL31VE2792PM31VK32C332BX32JJ31FS318M27M31F232G22H526M2H0318Z31VI2VW32N22H0323N2W431YL2W431MU31Y031BK2YU2SU32F22GZ2XA31Y523P26C32BP32VS31ZC31ES31ZZ31AT2XM32V02XN2XL32VU319G32VW32W42VZ28W31E22C432W331TD32W331MF2H02ES31Z031B631NI31FR31NL32E7327731G531R927G26232ID2WW2BS319423P31T7324G32WX2XL32WR32V42F031NL31AE31302792X131OQ2LL2XL31IP319G2BS32LU313F2BS31RY31T8324G32XC23P26U2JU311023V2JG2G131T12JU2XL32XT32XB314032Q52752T32G1311031RB32MO2IC2XL26631YB2IP326131E22IP32D2325532YE2XL25A2SY2I632YA318C2J92IK32FL2842J925632V032YS31NW32JW31ZC32YN324H32632J925I2H0326I28H324G32YW32Y0324H31A931RG2KK2O92M332E82VS2CC2OB2G92L62N12792JN2OV2G92K02NF31B92J92K02S932Y827O2T32J931A926431OW32ZD2752JG31GT2G932ZH31FO32ZK2N92JA2VS2K032KE2LM2MT2L42NH2IK2J92NZ2NH31I831F0330O318X2NH2MH2PM27Y2WA2I62NH2OX23P31AH2GZ2J92NH31OS29931AY3273279331731OS2F024V326R275331D31362783196326X32CB320M2GZ31FJ274325F2ZV331O318X2GZ2OI2XZ31GY31EX31O631F031NN32QL32BS31GY24L25M31B632NL2E1314L2W22PA28231BE23P31FA2SS32EL32O431VR2PX32QS2L7');-c)/2,n*2 end if e<l then e=l end while e>0 do local l=e%2 iflocal o=bit and bit.bxor or function(e,l)local n,o=1,0 while e>0 and l>0 do local d,c=e%2,l%2 if d~=c then o=o+n end e,l,n=(e-d)/2,(l l>0 then o=o+n end e,n=(e-l)/2,n*2 end return o end local +(c*256)+l;end;local function f()local l=o(a(G,e,e),133);e=e+1;return l;end;local function t()local l,n=a(G,e,e+2);l=o(l,133)n=o(n,133)e=e+2;return(n*256)+l;end;local function P()local e=l();local l=l();local c=1;local o=(n(l,1,20)*(2^32))+e;local e=function n(n,e,l)if l then local e=(n/2^(e-1))%2^((l-1)-(e-1)+1);return e-e%1;else local e=2^(e-1);return(n%(e+e)>=e)and 1 or 0;end;end;local e=1;local function l()local l,c,n,d=a(G,e,e+3);l=o(l,133)c=o(c,133)n=o(n,133)d=o(d,133)e=e+4;return(d*16777216)+(n*65536)n(l,21,31);local l=((-1)^n(l,32));if(e==0)then if(o==0)then return l*0;else e=1;c=0;end;elseif(e==2047)then return(o==0)and(l*(1/0))or(l*(0/0));end;return J(l,e-1023)*(c+(o/(2^52)));end;local i=l;local function J(l)local n;if(not l)then l=i();if(l==0)then return'';end;end;n=c(G,e,e+l-1);e=e+l;local l={}for e=1,#n do l[e]=L(o(a(c(n,e,e)),133))end return I(l);end;local e=l;local function i(...)return{...},B('#',...)end local function W()local a={};local L={};local e={};local G={a,L,nil,e};local e=l()local o={}for n=1,e do local l=f();local e;if(l==3)then e=(f()~=0);elseif(l==2)then e=P();elseif(l==1)then e=J();end;o[n]=e;end;for G=1,l()do local e=f();if(n(e,1,1)==0)then local c=n(e,2,3);local d=n(e,4,6);local e={t(),t(),nil,nil};if(c==0)then e[3]=t();e[4]=t();elseif(c==1)then e[3]=l();elseif(c==2)then e[3]=l()-(2^16)elseif(c==3)then e[3]=l()-(2^16)e[4]=t();end;if(n(d,1,1)==1)then e[2]=o[e[2]]end if(n(d,2,2)==1)then e[3]=o[e[3]]end if(n(d,3,3)==1)then e[4]=o[e[4]]end a[G]=e;end end;for e=1,l()do L[e-1]=W();end;G[3]=f();return G;end;local function I(e,G,t)local n=e[1];local l=e[2];local e=e[3];return function(...)local o=n;local J=l;local c=e;local i=i local l=1;local a=-1;local W={};local f={...};local L=B('#',...)-1;local B={};local n={};for e=0,L do if(e>=c)then W[e-c]=f[e+1];else n[e]=f[e+1];end;end;local e=L-c+1 local e;local c;while true do e=o[l];c=e[1];if c<=63 then if c<=31 then if c<=15 then if c<=7 then if c<=3 then if c<=1 then if c==0 then local e=e[2]local o,l=i(n[e](n[e+1]))a=l+e-1 local l=0;for e=e,a do l=l+1;n[e]=o[l];end;else local a;local c;n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];c=e[2]n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];a=n[e[3]];n[c+1]=a;n[c]=a[e[4]];l=l+1;e=o[l];c=e[2]n[c](n[c+1])l=l+1;e=o[l];c=e[2];a=n[e[3]];n[c+1]=a;n[c]=a[e[4]];l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];end;elseif c>2 then local e=e[2];do return d(n,e,a)end;else local t;local c;n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2];t=n[e[3]];n[c+1]=t;n[c]=t[e[4]];l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];n[e[2]]=(e[3]~=0);l=l+1;e=o[l];for e=e[2],e[3]do n[e]=nil;end;l=l+1;e=o[l];c=e[2];t=n[e[3]];n[c+1]=t;n[c]=t[e[4]];l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]][e[3]]=e[4];end;elseif c<=5 then if c==4 then local c;local L;local B,I;local f;local c;n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]]=G[e[3]];l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]]=G[e[3]];l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]B,I=i(n[c](n[c+1]))a=I+c-1 L=0;for e=c,a do L=L+1;n[e]=B[L];end;l=l+1;e=o[l];c=e[2]n[c](d(n,c+1,a))l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c](n[c+1])l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];c=e[2]B={n[c](n[c+1])};L=0;for e=c,e[4]do L=L+1;n[e]=B[L];end l=l+1;e=o[l];l=e[3];else local e=e[2]n[e](d(n,e+1,a))end;elseif c>6 then n[e[2]]();else do return n[e[2]]end end;elseif c<=11 then if c<=9 then if c==8 then n[e[2]]=n[e[3]][e[4]];else if not n[e[2]]then l=l+1;else l=e[3];end;end;elseif c>10 then n[e[2]]=n[e[3]][n[e[4]]];else if(n[e[2]]~=n[e[4]])then l=l+1;else l=e[3];end;end;elseif c<=13 then if c>12 then local a;local c;n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];c=e[2];a=n[e[3]];n[c+1]=a;n[c]=a[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];c=e[2]n[c]=n[c](n[c+1])l=l+1;e=o[l];c=e[2];a=n[e[3]];n[c+1]=a;n[c]=a[e[4]];l=l+1;e=o[l];c=e[2]n[c]=n[c](n[c+1])l=l+1;e=o[l];if not n[e[2]]then l=l+1;else l=e[3];end;else local o=e[2];local l=n[e[3]];n[o+1]=l;n[o]=l[e[4]];end;elseif c>14 then local f=J[e[3]];local a;local c={};a=N({},{__index=function(l,e)local e=c[e];return e[1][e[2]];end,__newindex=function(n,e,l)local e=c[e]e[1][e[2]]=l;end;});for d=1,e[4]do l=l+1;local e=o[l];if e[1]==108 then c[d-1]={n,e[3]};else c[d-1]={G,e[3]};end;B[#B+1]=c;end;n[e[2]]=I(f,a,t);else local l=e[2];do return n[l](d(n,l+1,e[3]))end;end;elseif c<=23 then if c<=19 then if c<=17 then if c==16 then n[e[2]][e[3]]=e[4];else local c;n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]n[c](d(n,c+1,e[3]))l=l+1;e=o[l];l=e[3];end;elseif c==18 then if(e[2]<n[e[4]])then l=e[3];else l=l+1;end;else local c;n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c](n[c+1])l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]n[c](n[c+1])l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]n[c](n[c+1])l=l+1;e=o[l];if not n[e[2]]then l=l+1;else l=e[3];end;end;elseif c<=21 then if c>20 then local c;local d;n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];d=e[3];c=n[d]for e=d+1,e[4]do c=c..n[e];end;n[e[2]]=c;else local e=e[2]local o,l=i(n[e](n[e+1]))a=l+e-1 local l=0;for e=e,a do l=l+1;n[e]=o[l];end;end;elseif c>22 then do return end;else n[e[2]]={};end;elseif c<=27 then if c<=25 then if c>24 then n[e[2]][e[3]]=e[4];else if(e[2]<n[e[4]])then l=e[3];else l=l+1;end;end;elseif c==26 then n[e[2]]=t[e[3]];else if not n[e[2]]then l=l+1;else l=e[3];end;end;elseif c<=29 then if c>28 then do return end;else n[e[2]]=(e[3]~=0);end;elseif c>30 then n[e[2]]=n[e[3]]-n[e[4]];else n[e[2]]=t[e[3]];end;elseif c<=47 then if c<=39 then if c<=35 then if c<=33 then if c==32 then if(n[e[2]]==n[e[4]])then l=l+1;else l=e[3];end;else local a;local f;local G;local c;n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];c=e[2];G=n[e[3]];n[c+1]=G;n[c]=G[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];c=e[2]n[c]=n[c](n[c+1])l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]f={n[c](n[c+1])};a=0;for e=c,e[4]do a=a+1;n[e]=f[a];end l=l+1;e=o[l];l=e[3];end;elseif c==34 then n[e[2]]=G[e[3]];else if(n[e[2]]<=n[e[4]])then l=l+1;else l=e[3];end;end;elseif c<=37 then if c>36 then if(n[e[2]]==e[4])then l=l+1;else l=e[3];end;else for e=e[2],e[3]do n[e]=nil;end;end;elseif c==38 then local l=e[2]local c={n[l](n[l+1])};local o=0;for e=l,e[4]do o=o+1;n[e]=c[o];end else local e=e[2]n[e]=n[e](n[e+1])end;elseif c<=43 then if c<=41 then if c>40 then local o=e[3];local l=n[o]for e=o+1,e[4]do l=l..n[e];end;n[e[2]]=l;else n[e[2]]=I(J[e[3]],nil,t);end;elseif c>42 then local d;local a;local c;n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]a={n[c](n[c+1])};d=0;for e=c,e[4]do d=d+1;n[e]=a[d];end l=l+1;e=o[l];l=e[3];else if n[e[2]]then l=l+1;else l=e[3];end;end;elseif c<=45 then if c>44 then n[e[2]][e[3]]=n[e[4]];else local e=e[2]n[e]=n[e]()end;elseif c==46 then local c;local d;n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];d=e[3];c=n[d]for e=d+1,e[4]do c=c..n[e];end;n[e[2]]=c;l=l+1;e=o[l];l=e[3];else local l=e[2]local c={n[l](d(n,l+1,a))};local o=0;for e=l,e[4]do o=o+1;n[e]=c[o];end end;elseif c<=55 then if c<=51 then if c<=49 then if c>48 then local a;local f;local G;local c;n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];c=e[2];G=n[e[3]];n[c+1]=G;n[c]=G[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];c=e[2]n[c]=n[c](n[c+1])l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]f={n[c](n[c+1])};a=0;for e=c,e[4]do a=a+1;n[e]=f[a];end l=l+1;e=o[l];l=e[3];else n[e[2]]=e[3];end;elseif c==50 then if(n[e[2]]~=e[4])then l=l+1;else l=e[3];end;else if n[e[2]]then l=l+1;else l=e[3];end;end;elseif c<=53 then if c==52 then local a;local c;n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];c=e[2];a=n[e[3]];n[c+1]=a;n[c]=a[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];c=e[2]n[c]=n[c](n[c+1])l=l+1;e=o[l];c=e[2];a=n[e[3]];n[c+1]=a;n[c]=a[e[4]];l=l+1;e=o[l];c=e[2]n[c]=n[c](n[c+1])l=l+1;e=o[l];if not n[e[2]]then l=l+1;else l=e[3];end;else n[e[2]][n[e[3]]]=e[4];end;elseif c>54 then local l=e[2]n[l]=n[l](d(n,l+1,e[3]))else local G;local c;n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];c=e[2];G=n[e[3]];n[c+1]=G;n[c]=G[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];c=e[2]n[c]=n[c](n[c+1])l=l+1;e=o[l];c=e[2];G=n[e[3]];n[c+1]=G;n[c]=G[e[4]];l=l+1;e=o[l];c=e[2];do return n[c](d(n,c+1,e[3]))end;l=l+1;e=o[l];c=e[2];do return d(n,c,a)end;l=l+1;e=o[l];do return end;end;elseif c<=59 then if c<=57 then if c==56 then if(n[e[2]]<=n[e[4]])then l=l+1;else l=e[3];end;else local t;local c;n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];c=e[2]n[c](d(n,c+1,e[3]))l=l+1;e=o[l];for e=e[2],e[3]do n[e]=nil;end;l=l+1;e=o[l];c=e[2];t=n[e[3]];n[c+1]=t;n[c]=t[e[4]];l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]][e[3]]=e[4];end;elseif c==58 then local d;local c;n[e[2]]=n[e[3]];l=l+1;e=o[l];n[e[2]]();l=l+1;e=o[l];for e=e[2],e[3]do n[e]=nil;end;l=l+1;e=o[l];c=e[2];d=n[e[3]];n[c+1]=d;n[c]=d[e[4]];l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]][e[3]]=e[4];else local c;local a;local d;n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];d=e[2]a={n[d](n[d+1])};c=0;for e=d,e[4]do c=c+1;n[e]=a[c];end l=l+1;e=o[l];l=e[3];end;elseif c<=61 then if c>60 then G[e[3]]=n[e[2]];else n[e[2]]=n[e[3]];l=l+1;e=o[l];n[e[2]]();l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]]={};end;elseif c==62 then local L;local B,I;local f;local c;n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]n[c](n[c+1])l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]]=G[e[3]];l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]B,I=i(n[c](n[c+1]))a=I+c-1 L=0;for e=c,a do L=L+1;n[e]=B[L];end;l=l+1;e=o[l];c=e[2]n[c](d(n,c+1,a))l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c](n[c+1])l=l+1;e=o[l];l=e[3];else n[e[2]][n[e[3]]]=n[e[4]];end;elseif c<=95 then if c<=79 then if c<=71 then if c<=67 then if c<=65 then if c>64 then local L;local B,I;local f;local c;n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c](n[c+1])l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]]=G[e[3]];l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]B,I=i(n[c](n[c+1]))a=I+c-1 L=0;for e=c,a do L=L+1;n[e]=B[L];end;l=l+1;e=o[l];c=e[2]n[c](d(n,c+1,a))else l=e[3];end;elseif c==66 then n[e[2]]=(e[3]~=0);else local e=e[2];do return d(n,e,a)end;end;elseif c<=69 then if c>68 then n[e[2]]=#n[e[3]];else n[e[2]]={};end;elseif c>70 then n[e[2]][n[e[3]]]=n[e[4]];else local o=e[2]local c={n[o](d(n,o+1,a))};local l=0;for e=o,e[4]do l=l+1;n[e]=c[l];end end;elseif c<=75 then if c<=73 then if c>72 then n[e[2]]=n[e[3]]-n[e[4]];else n[e[2]][e[3]]=n[e[4]];end;elseif c>74 then local c=e[2];local d=e[4];local o=c+2 local c={n[c](n[c+1],n[o])};for e=1,d do n[o+e]=c[e];end;local c=c[1]if c then n[o]=c l=e[3];else l=l+1;end;else local e=e[2]n[e](n[e+1])end;elseif c<=77 then if c>76 then if(n[e[2]]==e[4])then l=l+1;else l=e[3];end;else local c;n[e[2]]=n[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]n[c](n[c+1])l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c](n[c+1])l=l+1;e=o[l];if n[e[2]]then l=l+1;else l=e[3];end;end;elseif c==78 then local c;local G;local L,B;local f;local c;n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];c=e[2]n[c](n[c+1])l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];c=e[2];f=n[e[3]];n[c+1]=f;n[c]=f[e[4]];l=l+1;e=o[l];c=e[2]L,B=i(n[c](n[c+1]))a=B+c-1 G=0;for e=c,a do G=G+1;n[e]=L[G];end;l=l+1;e=o[l];c=e[2]L={n[c](d(n,c+1,a))};G=0;for e=c,e[4]do G=G+1;n[e]=L[G];end l=l+1;e=o[l];l=e[3];else local t;local c;c=e[2];t=n[e[3]];n[c+1]=t;n[c]=t[e[4]];l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];c=e[2]n[c](d(n,c+1,e[3]))l=l+1;e=o[l];l=e[3];end;elseif c<=87 then if c<=83 then if c<=81 then if c>80 then local e=e[2]n[e](n[e+1])else local f;local L,B;local G;local c;n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];c=e[2];G=n[e[3]];n[c+1]=G;n[c]=G[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];G=n[e[3]];n[c+1]=G;n[c]=G[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];c=e[2];G=n[e[3]];n[c+1]=G;n[c]=G[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];G=n[e[3]];n[c+1]=G;n[c]=G[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];G=n[e[3]];n[c+1]=G;n[c]=G[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];G=n[e[3]];n[c+1]=G;n[c]=G[e[4]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]L,B=i(n[c](n[c+1]))a=B+c-1 f=0;for e=c,a do f=f+1;n[e]=L[f];end;l=l+1;e=o[l];c=e[2]n[c](d(n,c+1,a))end;elseif c>82 then n[e[2]]=G[e[3]];else local l=e[2];do return n[l](d(n,l+1,e[3]))end;end;elseif c<=85 then if c>84 then local d=e[2];local o={};for e=1,#B do local e=B[e];for l=0,#e do local l=e[l];local c=l[1];local e=l[2];if c==n and e>=d then o[e]=c[e];l[1]=o;end;end;end;else local c;n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c](n[c+1])l=l+1;e=o[l];n[e[2]]=G[e[3]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c](d(n,c+1,e[3]))end;elseif c==86 then n[e[2]][n[e[3]]]=e[4];else n[e[2]]=n[e[3]];end;elseif c<=91 then if c<=89 then if c>88 then n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];if not n[e[2]]then l=l+1;else l=e[3];end;else local d=e[2];local c={};for e=1,#B do local e=B[e];for l=0,#e do local e=e[l];local o=e[1];local l=e[2];if o==n and l>=d then c[l]=o[l];e[1]=c;end;end;end;end;elseif c>90 then if(n[e[2]]~=e[4])then l=l+1;else l=e[3];end;else n[e[2]]=n[e[3]][n[e[4]]];end;elseif c<=93 then if c==92 then local o=e[3];local l=n[o]for e=o+1,e[4]do l=l..n[e];end;n[e[2]]=l;else for e=e[2],e[3]do n[e]=nil;end;end;elseif c>94 then if(n[e[2]]~=n[e[4]])then l=l+1;else l=e[3];end;else local d;local a;local c;n[e[2]]={};l=l+1;e=o[l];n[e[2]][n[e[3]]]=n[e[4]];l=l+1;e=o[l];n[e[2]]=G[e[3]];l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][n[e[3]]]=n[e[4]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]a={n[c](n[c+1])};d=0;for e=c,e[4]do d=d+1;n[e]=a[d];end l=l+1;e=o[l];l=e[3];end;elseif c<=111 then if c<=103 then if c<=99 then if c<=97 then if c>96 then n[e[2]]=e[3];else local t;local c;c=e[2];t=n[e[3]];n[c+1]=t;n[c]=t[e[4]];l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]][e[3]]=n[e[4]];l=l+1;e=o[l];c=e[2]n[c](d(n,c+1,e[3]))end;elseif c==98 then n[e[2]]=n[e[3]][e[4]];else local t;local c;c=e[2];t=n[e[3]];n[c+1]=t;n[c]=t[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];c=e[2];t=n[e[3]];n[c+1]=t;n[c]=t[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c](d(n,c+1,e[3]))end;elseif c<=101 then if c>100 then l=e[3];else local c;n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c](d(n,c+1,e[3]))l=l+1;e=o[l];do return end;end;elseif c>102 then do return n[e[2]]end else n[e[2]]();end;elseif c<=107 then if c<=105 then if c==104 then local l=e[2]n[l]=n[l](d(n,l+1,e[3]))else local c=e[2];local d=e[4];local o=c+2 local c={n[c](n[c+1],n[o])};for e=1,d do n[o+e]=c[e];end;local c=c[1]if c then n[o]=c l=e[3];else l=l+1;end;end;elseif c>106 then local a;local c;n[e[2]]=t[e[3]];l=l+1;e=o[l];c=e[2];a=n[e[3]];n[c+1]=a;n[c]=a[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];c=e[2]n[c]=n[c](n[c+1])l=l+1;e=o[l];c=e[2];a=n[e[3]];n[c+1]=a;n[c]=a[e[4]];l=l+1;e=o[l];c=e[2]n[c]=n[c](n[c+1])l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];if n[e[2]]then l=l+1;else l=e[3];end;else local d;local t;local c;n[e[2]]=G[e[3]];l=l+1;e=o[l];n[e[2]]=G[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]][n[e[4]]];l=l+1;e=o[l];c=e[2]t={n[c](n[c+1])};d=0;for e=c,e[4]do d=d+1;n[e]=t[d];end l=l+1;e=o[l];l=e[3];end;elseif c<=109 then if c>108 then local e=e[2]n[e](d(n,e+1,a))else n[e[2]]=n[e[3]];end;elseif c>110 then n[e[2]]=I(J[e[3]],nil,t);else local o=n[e[4]];if o then l=l+1;else n[e[2]]=o;l=e[3];end;end;elseif c<=119 then if c<=115 then if c<=113 then if c>112 then local l=e)l=l+1;e=o[l];n[e[2]]=G[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]][n[e[4]]];l=l+1;e=o[l];n[e[2]][n[e[3]]]=n[e[4]];end;elseif c==118 then local a;local c;n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];c=e[2];a=n[e[3]];n[c+1]=a;n[c]=a[e[4]];l=l+1;e=o[l];n[e[2]]=e[3];l=l+1;e=o[l];c=e[2]n[c]=n[c](d(n,c+1,e[3]))l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];if n[e[2]]then l=l+1;else l=e[3];end;else local l=e[2]n[l](d(n,l+1,e[3]))end;elseif c<=123 then if c<=121 then if c>120 then G[e[3]]=n[e[2]];else local o=n[e[4]];if o then l=l+1;else n[e[2]]=o;l=e[3];end;end;elseif c>122 then local e=e[2]n[e]=n[e]()else if(n[e[2]]==n[e[4]])then l=l+1;else l=e[3];end;end;elseif c<=125 then if c>124 then local t;local c;c=e[2];t=n[e[3]];n[c+1]=t;n[c]=t[e[4]];l=l+1;e=o[l];n[e[2]]={};l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];n[e[2]][e[3]]=e[4];l=l+1;e=o[l];c=e[[2]n[l](d(n,l+1,e[3]))else local e=e[2]n[e]=n[e](n[e+1])end;elseif c>114 then n[e[2]]=#n[e[3]];else local f=J[e[3]];local a;local c={};a=N({},{__index=function(l,e)local e=c[e];return e[1][e[2]];end,__newindex=function(n,e,l)local e=c[e]e[1][e[2]]=l;end;});for d=1,e[4]do l=l+1;local e=o[l];if e[1]==108 then c[d-1]={n,e[3]};else c[d-1]={G,e[3]};end;B[#B+1]=c;end;n[e[2]]=I(f,a,t);end;elseif c<=117 then if c>116 then local l=e[2]local c={n[l](n[l+1])};local o=0;for e=l,e[4]do o=o+1;n[e]=c[o];end else local c;n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=G[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]][n[e[4]]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]n[c](d(n,c+1,e[3])2]n[c](d(n,c+1,e[3]))else local l=e[2];local o=n[e[3]];n[l+1]=o;n[l]=o[e[4]];end;elseif c==126 then n[e[2]]={};l=l+1;e=o[l];n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];G[e[3]]=n[e[2]];l=l+1;e=o[l];n[e[2]]=G[e[3]];l=l+1;e=o[l];n[e[2]]=G[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]][n[e[4]]];l=l+1;e=o[l];if n[e[2]]then l=l+1;else l=e[3];end;else local d;local a;local c;n[e[2]]=n[e[3]][e[4]];l=l+1;e=o[l];n[e[2]]=t[e[3]];l=l+1;e=o[l];n[e[2]]=n[e[3]];l=l+1;e=o[l];c=e[2]a={n[c](n[c+1])};d=0;for e=c,e[4]do d=d+1;n[e]=a[d];end l=l+1;e=o[l];l=e[3];end;l=l+1;end;end;end;return I(W(),{},S())();
+local M = {}
+
+function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
+    local HttpService = game:GetService("HttpService")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local GameEvents = ReplicatedStorage:FindFirstChild("GameEvents")
+    local TeleportService = game:GetService("TeleportService")
+    local RunService = game:GetService("RunService")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local PlayerGui = LocalPlayer.PlayerGui
+
+    -- ===================== STATE =====================
+    local AutoCraftCampfireEnabled = false
+    local AutoCraftGearEnabled = false
+    local AutoCraftSeedsEnabled = false
+    local CampfireRecipeSelected = nil
+    local GearRecipeSelected = nil
+    local SeedRecipeSelected = nil
+    local OrangutanSlot = nil
+    local ForgerHamsterSlot = nil
+    local PachySlot = nil
+    local IsCraftingCampfire = false
+    local IsCraftingGear = false
+    local IsCraftingSeeds = false
+
+    -- ===================== GUI REFERENCES =====================
+    local SummerCrafting = PlayerGui:FindFirstChild("SummerCrafting")
+    local Craft1, Craft2, Craft3
+    if SummerCrafting then
+        local Crafting = SummerCrafting:FindFirstChild("Crafting")
+        local Main = Crafting and Crafting:FindFirstChild("Main")
+        local Campfire = Main and Main:FindFirstChild("Campfire")
+        local CampfireCrafting = Campfire and Campfire:FindFirstChild("Crafting")
+        Craft1 = CampfireCrafting and CampfireCrafting:FindFirstChild("Craft1")
+        Craft2 = CampfireCrafting and CampfireCrafting:FindFirstChild("Craft2")
+        Craft3 = CampfireCrafting and CampfireCrafting:FindFirstChild("Craft3")
+    end
+
+    local ActivePetUI = PlayerGui:FindFirstChild("ActivePetUI")
+    local ActivePetButtonHolder
+    if ActivePetUI then
+        local ActivePetFrame = ActivePetUI:FindFirstChild("Frame")
+        local ActivePetMain = ActivePetFrame and ActivePetFrame:FindFirstChild("Main")
+        local ActivePetLoadout = ActivePetMain and ActivePetMain:FindFirstChild("PetLoadout")
+        local ActivePetLoadoutMain = ActivePetLoadout and ActivePetLoadout:FindFirstChild("Main")
+        ActivePetButtonHolder = ActivePetLoadoutMain and ActivePetLoadoutMain:FindFirstChild("ButtonHolder")
+    end
+
+    local GearCraftingProximityPrompt = nil
+
+    local RequirePassed, CraftingStationHandler = pcall(function()
+        return require(ReplicatedStorage.Modules.CraftingStationHandler)
+    end)
+
+    local WorkbenchFound, EventCraftingWorkBench = pcall(function()
+        local CraftingTables = workspace:FindFirstChild("CraftingTables")
+        local EventCraftingWorkBench = CraftingTables.EventCraftingWorkBench
+        for _, Model in ipairs(EventCraftingWorkBench:GetChildren()) do
+            if Model.Name == "Model" then
+                for _, Part in ipairs(Model:GetChildren()) do
+                    if #Part:GetChildren() > 0 then
+                        GearCraftingProximityPrompt = Part.CraftingProximityPrompt
+                        break
+                    end
+                end
+            end
+        end
+        return EventCraftingWorkBench
+    end)
+
+    local MyFarm = nil
+    local Farms = workspace:FindFirstChild("Farm")
+    if Farms then
+        for _, Farm in pairs(Farms:GetChildren()) do
+            local Important = Farm:FindFirstChild("Important")
+            local Data = Important and Important:FindFirstChild("Data")
+            local Owner = Data and Data:FindFirstChild("Owner")
+            if Owner and Owner.Value == LocalPlayer.Name then
+                MyFarm = Farm
+                break
+            end
+        end
+    end
+
+    local MyImportant = MyFarm and MyFarm:FindFirstChild("Important")
+    local MyPlants = MyImportant and MyImportant:FindFirstChild("Plants_Physical")
+    local MyCosmetics = MyImportant and MyImportant:FindFirstChild("Cosmetic_Physical")
+
+    -- ===================== HELPERS =====================
+    local function SetPlantVisibility(hide)
+        if not MyPlants then return end
+        if hide then
+            MyPlants.Parent = nil
+        else
+            MyPlants.Parent = MyImportant
+        end
+    end
+
+    local function SetCosmeticVisibility(hide)
+        if not MyCosmetics then return end
+        if hide then
+            MyCosmetics.Parent = nil
+        else
+            MyCosmetics.Parent = MyImportant
+        end
+    end
+
+    local function SwapToLoadout(LoadoutNum)
+        if not ActivePetButtonHolder then return end
+        local LoadoutSlot = ActivePetButtonHolder:FindFirstChild("PET_LOADOUT_" .. LoadoutNum)
+        if LoadoutSlot and LoadoutSlot.BackgroundColor3 ~= Color3.fromRGB(36, 227, 36) then
+            repeat
+                GameEvents.PetsService:FireServer("SwapPetLoadout", tonumber(LoadoutNum))
+                task.wait(5)
+                LoadoutSlot = ActivePetButtonHolder:FindFirstChild("PET_LOADOUT_" .. LoadoutNum)
+            until LoadoutSlot and LoadoutSlot.BackgroundColor3 == Color3.fromRGB(36, 227, 36)
+        end
+    end
+
+    -- ===================== CRAFT LOOPS =====================
+    local function AutoCraftCampfireLoop()
+        if IsCraftingCampfire then return end
+        IsCraftingCampfire = true
+        local SummerCraftingService = GameEvents.SummerCraftingService
+        local TimesLeft = {}
+        if Craft1 and Craft2 and Craft3 then
+            TimesLeft = {Craft1.TimeLeft, Craft2.TimeLeft, Craft3.TimeLeft}
+        end
+        while AutoCraftCampfireEnabled and CampfireRecipeSelected do
+            local HasOpenSlot = nil
+            local HasClaim = nil
+            for Index, TimeLeft in ipairs(TimesLeft) do
+                if TimeLeft.Visible and TimeLeft.Text == "CLAIM!" then
+                    HasClaim = true
+                    SummerCraftingService.ClaimCraft:FireServer(Index)
+                    task.wait(0.2)
+                end
+                if not TimeLeft.Visible then
+                    HasOpenSlot = true
+                end
+            end
+            if HasOpenSlot then
+                SummerCraftingService.StartCraft:FireServer(CampfireRecipeSelected)
+                task.wait(0.5)
+            elseif not HasClaim then
+                repeat
+                    task.wait(2)
+                until not AutoCraftCampfireEnabled or not CampfireRecipeSelected
+                    or not TimesLeft[1].Visible or not TimesLeft[2].Visible or not TimesLeft[3].Visible
+                    or TimesLeft[1].Text == "CLAIM!" or TimesLeft[2].Text == "CLAIM!" or TimesLeft[3].Text == "CLAIM!"
+            end
+        end
+        IsCraftingCampfire = false
+    end
+
+    local function AutoCraftGearLoop()
+        if not RequirePassed then
+            Rayfield:Notify({
+                Title = "Event Crafting Error",
+                Content = "Auto-Craft Gear is not supported on your executor.",
+                Duration = 10,
+                Image = beastHubIcon,
+            })
+            return
+        end
+        if not WorkbenchFound then
+            Rayfield:Notify({
+                Title = "Event Crafting Error",
+                Content = "You cannot craft items in tutorial servers.",
+                Duration = 10,
+                Image = beastHubIcon,
+            })
+            return
+        end
+        if IsCraftingGear then return end
+        IsCraftingGear = true
+        while AutoCraftGearEnabled and GearRecipeSelected do
+            if GearCraftingProximityPrompt.ActionText ~= "Select Recipe" then
+                if GearCraftingProximityPrompt.ActionText == "Claim" then
+                    if PachySlot then SwapToLoadout(PachySlot) end
+                    GameEvents.CraftingGlobalObjectService:FireServer("Claim", EventCraftingWorkBench, "GearEventWorkbench", 1)
+                    task.wait(1)
+                elseif GearCraftingProximityPrompt.ActionText ~= "Skip" then
+                    GameEvents.CraftingGlobalObjectService:FireServer("Cancel", EventCraftingWorkBench, "GearEventWorkbench")
+                    task.wait(1)
+                end
+            end
+            GameEvents.CraftingGlobalObjectService:FireServer("SetRecipe", EventCraftingWorkBench, "GearEventWorkbench", GearRecipeSelected)
+            task.wait(1)
+            if GearCraftingProximityPrompt.ActionText == "Submit Item" and OrangutanSlot then
+                SwapToLoadout(OrangutanSlot)
+            end
+            CraftingStationHandler:SubmitAllRequiredItems(EventCraftingWorkBench)
+            task.wait(1)
+            if not AutoCraftGearEnabled or not GearRecipeSelected then break end
+            GameEvents.CraftingGlobalObjectService:FireServer("Craft", EventCraftingWorkBench, "GearEventWorkbench")
+            task.wait(1)
+            if GearCraftingProximityPrompt.ActionText == "Skip" and ForgerHamsterSlot then
+                SwapToLoadout(ForgerHamsterSlot)
+            end
+            repeat
+                task.wait(2)
+            until not AutoCraftGearEnabled or not GearRecipeSelected or GearCraftingProximityPrompt.ActionText ~= "Skip"
+            if AutoCraftGearEnabled and GearRecipeSelected then
+                if GearCraftingProximityPrompt.ActionText == "Claim" and PachySlot then
+                    SwapToLoadout(PachySlot)
+                end
+                GameEvents.CraftingGlobalObjectService:FireServer("Claim", EventCraftingWorkBench, "GearEventWorkbench", 1)
+                task.wait(1)
+            end
+        end
+        IsCraftingGear = false
+    end
+
+    local function AutoCraftSeedsLoop()
+        if not RequirePassed then
+            Rayfield:Notify({
+                Title = "Event Crafting Error",
+                Content = "Auto-Craft Seeds is not supported on your executor.",
+                Duration = 10,
+                Image = beastHubIcon,
+            })
+            return
+        end
+        if not WorkbenchFound then
+            Rayfield:Notify({
+                Title = "Event Crafting Error",
+                Content = "You cannot craft items in tutorial servers.",
+                Duration = 10,
+                Image = beastHubIcon,
+            })
+            return
+        end
+        if IsCraftingSeeds then return end
+        IsCraftingSeeds = true
+        while AutoCraftSeedsEnabled and SeedRecipeSelected do
+            local SeedEventCraftingWorkBench = workspace.CraftingTables.SeedEventCraftingWorkBench
+            local Model = SeedEventCraftingWorkBench.Model
+            local BenchTable = Model.BenchTable
+            local SeedCraftingProximityPrompt = BenchTable.CraftingProximityPrompt
+            if SeedCraftingProximityPrompt.ActionText ~= "Select Recipe" then
+                if SeedCraftingProximityPrompt.ActionText == "Claim" then
+                    if PachySlot then SwapToLoadout(PachySlot) end
+                    GameEvents.CraftingGlobalObjectService:FireServer("Claim", SeedEventCraftingWorkBench, "SeedEventWorkbench", 1)
+                    task.wait(1)
+                elseif SeedCraftingProximityPrompt.ActionText ~= "Skip" then
+                    GameEvents.CraftingGlobalObjectService:FireServer("Cancel", SeedEventCraftingWorkBench, "SeedEventWorkbench")
+                    task.wait(1)
+                end
+            end
+            GameEvents.CraftingGlobalObjectService:FireServer("SetRecipe", SeedEventCraftingWorkBench, "SeedEventWorkbench", SeedRecipeSelected)
+            task.wait(1)
+            if OrangutanSlot and SeedCraftingProximityPrompt.ActionText == "Submit Item" then
+                SwapToLoadout(OrangutanSlot)
+            end
+            CraftingStationHandler:SubmitAllRequiredItems(SeedEventCraftingWorkBench)
+            task.wait(1)
+            if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
+            GameEvents.CraftingGlobalObjectService:FireServer("Craft", SeedEventCraftingWorkBench, "SeedEventWorkbench")
+            task.wait(1)
+            if ForgerHamsterSlot and SeedCraftingProximityPrompt.ActionText == "Skip" then
+                SwapToLoadout(ForgerHamsterSlot)
+            end
+            repeat
+                task.wait(2)
+            until not AutoCraftSeedsEnabled or not SeedRecipeSelected or SeedCraftingProximityPrompt.ActionText ~= "Skip"
+            if AutoCraftSeedsEnabled and SeedRecipeSelected then
+                if PachySlot and SeedCraftingProximityPrompt.ActionText == "Claim" then
+                    SwapToLoadout(PachySlot)
+                end
+                GameEvents.CraftingGlobalObjectService:FireServer("Claim", SeedEventCraftingWorkBench, "SeedEventWorkbench", 1)
+                task.wait(1)
+            end
+        end
+        IsCraftingSeeds = false
+    end
+
+    -- ===================== TAB UI =====================
+    local Event = Window:CreateTab("Event", "hammer")
+
+    -- ---- Campfire Crafting ----
+    Event:CreateSection("Campfire Crafting")
+
+    Event:CreateToggle({
+        Name = "Auto-Craft Campfire Recipe",
+        CurrentValue = false,
+        Flag = "eventAutoCraftCampfire",
+        Callback = function(Value)
+            AutoCraftCampfireEnabled = Value
+            if Value and CampfireRecipeSelected then
+                task.spawn(AutoCraftCampfireLoop)
+            end
+        end,
+    })
+
+    Event:CreateDropdown({
+        Name = "Campfire Recipe",
+        Options = {
+            "1:1:Firepit Flower", "1:2:Cauliflower", "2:1:Campfire Crate",
+            "2:2:Common Summer Egg", "2:3:Green Apple", "2:4:Avocado",
+            "3:1:Super Watering Can", "3:2:Areaclaimer", "3:3:Banana", "3:4:Kiwi",
+            "4:1:Hearth Reed", "4:2:Rare Summer Egg", "4:3:Prickly Pear",
+            "5:1:Feijoa", "5:2:Paradise Egg", "5:3:Energy Chew",
+            "5:4:Pitcher Plant", "5:5:Campfire Egg"
+        },
+        CurrentOption = {},
+        MultipleOptions = false,
+        Flag = "eventCampfireRecipe",
+        Callback = function(Option)
+            CampfireRecipeSelected = (Option ~= "" and Option) or nil
+            if AutoCraftCampfireEnabled and CampfireRecipeSelected then
+                task.spawn(AutoCraftCampfireLoop)
+            end
+        end,
+    })
+
+    Event:CreateDivider()
+
+    -- ---- Gear Crafting ----
+    Event:CreateSection("Gear Crafting")
+
+    Event:CreateToggle({
+        Name = "Auto-Craft Gear",
+        CurrentValue = false,
+        Flag = "eventAutoCraftGear",
+        Callback = function(Value)
+            AutoCraftGearEnabled = Value
+            if Value and GearRecipeSelected then
+                task.spawn(AutoCraftGearLoop)
+            end
+        end,
+    })
+
+    Event:CreateDropdown({
+        Name = "Gear Recipe",
+        Options = {
+            "Lightning Rod", "Tanning Mirror", "Reclaimer", "Event Lantern",
+            "Anti Bee Egg", "Small Toy", "Small Treat", "Pet Pouch", "Pack Bee",
+            "Silver Ingot", "Gold Ingot", "Chimera Stone", "Black Spotty Egg",
+            "Tropical Mist Sprinkler", "Berry Blusher Sprinkler", "Spice Spritzer Sprinkler",
+            "Flower Froster Sprinkler", "Stalk Sprout Sprinkler", "Sweet Soaker Sprinkler",
+            "Mutation Spray Pollinated", "Honey Crafters Crate", "Mutation Spray Glimmering",
+            "Mutation Spray Chilled", "Mutation Spray Shocked", "Mutation Spray Choc"
+        },
+        CurrentOption = {},
+        MultipleOptions = false,
+        Flag = "eventGearRecipe",
+        Callback = function(Option)
+            GearRecipeSelected = (Option ~= "" and Option) or nil
+            if AutoCraftGearEnabled and GearRecipeSelected then
+                task.spawn(AutoCraftGearLoop)
+            end
+        end,
+    })
+
+    Event:CreateDivider()
+
+    -- ---- Seed Crafting ----
+    Event:CreateSection("Seed Crafting")
+
+    Event:CreateToggle({
+        Name = "Auto-Craft Seeds",
+        CurrentValue = false,
+        Flag = "eventAutoCraftSeeds",
+        Callback = function(Value)
+            AutoCraftSeedsEnabled = Value
+            if Value and SeedRecipeSelected then
+                task.spawn(AutoCraftSeedsLoop)
+            end
+        end,
+    })
+
+    Event:CreateDropdown({
+        Name = "Seed Recipe",
+        Options = {
+            "Egg Melon", "Mandrake", "Evo Apple I", "Evo Apple II", "Evo Apple III",
+            "Evo Apple IV", "Olive", "Hollow Bamboo", "Yarrow", "Grand Volcania",
+            "Peace Lily", "Aloe Vera", "Guanabana", "Crafters Seed Pack",
+            "Manuka Flower", "Dandelion", "Lumira", "Honeysuckle", "Bee Balm",
+            "Nectar Thorn", "Suncoil", "Twisted Tangle", "Veinpetal",
+            "Horsetail", "Lingonberry", "Amber Spine"
+        },
+        CurrentOption = {},
+        MultipleOptions = false,
+        Flag = "eventSeedRecipe",
+        Callback = function(Option)
+            SeedRecipeSelected = (Option ~= "" and Option) or nil
+            if AutoCraftSeedsEnabled and SeedRecipeSelected then
+                task.spawn(AutoCraftSeedsLoop)
+            end
+        end,
+    })
+
+    Event:CreateDivider()
+
+    -- ---- Pet Loadout Slots ----
+    Event:CreateSection("Pet Loadout Slots")
+
+    Event:CreateInput({
+        Name = "Orangutan Loadout Slot",
+        CurrentValue = "",
+        PlaceholderText = "Slot # with Orangutans equipped",
+        RemoveTextAfterFocusLost = false,
+        Flag = "eventOrangutanSlot",
+        Callback = function(Text)
+            local n = tonumber(Text)
+            if n == 2 then
+                OrangutanSlot = "3"
+            elseif n == 3 then
+                OrangutanSlot = "2"
+            else
+                OrangutanSlot = (Text ~= "" and Text) or nil
+            end
+        end,
+    })
+
+    Event:CreateInput({
+        Name = "Hamster / Forger-mutated Slot",
+        CurrentValue = "",
+        PlaceholderText = "Slot # with craft speed boost pets",
+        RemoveTextAfterFocusLost = false,
+        Flag = "eventForgerSlot",
+        Callback = function(Text)
+            local n = tonumber(Text)
+            if n == 2 then
+                ForgerHamsterSlot = "3"
+            elseif n == 3 then
+                ForgerHamsterSlot = "2"
+            else
+                ForgerHamsterSlot = (Text ~= "" and Text) or nil
+            end
+        end,
+    })
+
+    Event:CreateInput({
+        Name = "Pachycephalosaurus Slot",
+        CurrentValue = "",
+        PlaceholderText = "Slot # with Pachys / Pack Mules",
+        RemoveTextAfterFocusLost = false,
+        Flag = "eventPachySlot",
+        Callback = function(Text)
+            local n = tonumber(Text)
+            if n == 2 then
+                PachySlot = "3"
+            elseif n == 3 then
+                PachySlot = "2"
+            else
+                PachySlot = (Text ~= "" and Text) or nil
+            end
+        end,
+    })
+
+    Event:CreateDivider()
+
+    -- ---- Farm Settings ----
+    Event:CreateSection("Farm Settings")
+
+    Event:CreateToggle({
+        Name = "Hide Plants",
+        CurrentValue = false,
+        Flag = "eventHidePlants",
+        Callback = function(Value)
+            SetPlantVisibility(Value)
+        end,
+    })
+
+    Event:CreateToggle({
+        Name = "Hide Cosmetics",
+        CurrentValue = false,
+        Flag = "eventHideCosmetics",
+        Callback = function(Value)
+            SetCosmeticVisibility(Value)
+        end,
+    })
+
+    Event:CreateToggle({
+        Name = "Disable 3D Rendering",
+        CurrentValue = false,
+        Flag = "eventDisable3D",
+        Callback = function(Value)
+            RunService:Set3dRenderingEnabled(not Value)
+        end,
+    })
+
+    Event:CreateButton({
+        Name = "Hide All GUIs (rejoin to undo)",
+        Callback = function()
+            for _, Element in pairs(PlayerGui:GetChildren()) do
+                if Element:IsA("ScreenGui") then
+                    if Element.Name == "Sheckles_UI" or Element.Name == "ChocCoinCurrency_UI" then
+                        Element:Destroy()
+                    else
+                        Element.Enabled = false
+                    end
+                end
+            end
+        end,
+    })
+
+    Event:CreateButton({
+        Name = "Rejoin Game",
+        Callback = function()
+            TeleportService:Teleport(game.PlaceId, LocalPlayer)
+        end,
+    })
+end
+
+return M
