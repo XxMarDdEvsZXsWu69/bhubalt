@@ -136,6 +136,21 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
         end
     end
 
+    -- ===================== CRAFT HELPERS =====================
+
+    -- Waits until prompt.ActionText == expected, up to `timeout` seconds.
+    -- Returns true if it matched, false if timed out or toggle turned off.
+    local function waitForAction(prompt, expected, timeout, enabledRef, recipeRef)
+        local elapsed = 0
+        while prompt.ActionText ~= expected do
+            if elapsed >= timeout then return false end
+            if not enabledRef() or not recipeRef() then return false end
+            task.wait(0.5)
+            elapsed = elapsed + 0.5
+        end
+        return true
+    end
+
     -- ===================== CRAFT LOOPS =====================
 
     -- ---- Campfire ----
@@ -270,60 +285,67 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
                 return
             end
 
+            local p    = GearCraftingProximityPrompt
+            local wb   = EventCraftingWorkBench
+            local wbId = "GearEventWorkbench"
+            local function gearOn()    return AutoCraftGearEnabled end
+            local function gearRecipe() return GearRecipeSelected end
+
             while AutoCraftGearEnabled and GearRecipeSelected do
-                -- Reset to clean state if not on Select Recipe
-                local action = GearCraftingProximityPrompt.ActionText
-                if action ~= "Select Recipe" then
-                    if action == "Claim" then
-                        if PachySlot then SwapToLoadout(PachySlot) end
-                        CraftService:FireServer("Claim", EventCraftingWorkBench, "GearEventWorkbench", 1)
-                        task.wait(1)
-                    elseif action ~= "Skip" then
-                        CraftService:FireServer("Cancel", EventCraftingWorkBench, "GearEventWorkbench")
-                        task.wait(1)
-                    end
+                -- ── RESET: if stuck mid-flow, cancel or claim before starting ──
+                local action = p.ActionText
+                if action == "Claim" then
+                    if PachySlot then SwapToLoadout(PachySlot) end
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
+                elseif action ~= "Select Recipe" and action ~= "Submit Item" then
+                    CraftService:FireServer("Cancel", wb, wbId)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
                 end
-
-                -- Set recipe
-                CraftService:FireServer("SetRecipe", EventCraftingWorkBench, "GearEventWorkbench", GearRecipeSelected)
-                task.wait(1)
-
-                -- Swap to Orangutans before submitting
-                if GearCraftingProximityPrompt.ActionText == "Submit Item" and OrangutanSlot then
-                    SwapToLoadout(OrangutanSlot)
-                end
-
-                -- Submit all required items
-                handler:SubmitAllRequiredItems(EventCraftingWorkBench)
-                task.wait(1)
 
                 if not AutoCraftGearEnabled or not GearRecipeSelected then break end
 
-                -- Fire craft
-                CraftService:FireServer("Craft", EventCraftingWorkBench, "GearEventWorkbench")
-                task.wait(1)
-
-                -- Swap to Forger/Hamster while crafting is in progress
-                if GearCraftingProximityPrompt.ActionText == "Skip" and ForgerHamsterSlot then
-                    SwapToLoadout(ForgerHamsterSlot)
+                -- ── STEP 1: Set Recipe → wait for "Submit Item" ──
+                CraftService:FireServer("SetRecipe", wb, wbId, GearRecipeSelected)
+                if not waitForAction(p, "Submit Item", 10, gearOn, gearRecipe) then
+                    task.wait(1); continue
                 end
 
-                -- Wait for craft to finish
-                repeat task.wait(2) until
+                -- ── STEP 2: Swap to Orangutans → Submit All Required Items ──
+                if OrangutanSlot then SwapToLoadout(OrangutanSlot) end
+                handler:SubmitAllRequiredItems(wb)
+
+                -- wait until items are accepted (ActionText leaves "Submit Item")
+                local elapsed = 0
+                while p.ActionText == "Submit Item" and elapsed < 10 do
+                    task.wait(0.5); elapsed = elapsed + 0.5
+                end
+
+                if not AutoCraftGearEnabled or not GearRecipeSelected then break end
+
+                -- ── STEP 3: Start Crafting → wait for "Skip" (craft in progress) ──
+                CraftService:FireServer("Craft", wb, wbId)
+                if not waitForAction(p, "Skip", 10, gearOn, gearRecipe) then
+                    task.wait(1); continue
+                end
+
+                -- ── STEP 4: Swap to Forger/Hamster while craft runs ──
+                if ForgerHamsterSlot then SwapToLoadout(ForgerHamsterSlot) end
+
+                -- wait for craft to finish ("Skip" → "Claim")
+                repeat task.wait(1) until
                     not AutoCraftGearEnabled
                     or not GearRecipeSelected
-                    or GearCraftingProximityPrompt.ActionText ~= "Skip"
+                    or p.ActionText ~= "Skip"
 
-                -- Claim if still running
-                if AutoCraftGearEnabled and GearRecipeSelected then
-                    if GearCraftingProximityPrompt.ActionText == "Claim" and PachySlot then
-                        SwapToLoadout(PachySlot)
-                    end
-                    CraftService:FireServer("Claim", EventCraftingWorkBench, "GearEventWorkbench", 1)
-                    task.wait(1)
+                -- ── STEP 5: Claim result ──
+                if AutoCraftGearEnabled and GearRecipeSelected and p.ActionText == "Claim" then
+                    if PachySlot then SwapToLoadout(PachySlot) end
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
                 end
 
-                task.wait(0.1) -- safety throttle
+                task.wait(0.1)
             end
         end)
 
@@ -378,72 +400,76 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
                 return
             end
 
+            local wbId = "SeedEventWorkbench"
+            local function seedOn()     return AutoCraftSeedsEnabled end
+            local function seedRecipe() return SeedRecipeSelected end
+
             while AutoCraftSeedsEnabled and SeedRecipeSelected do
                 -- Re-find workbench each iteration in case it reloads
-                local wb, prompt = findSeedWorkbench()
-                if not wb or not prompt then
+                local wb, p = findSeedWorkbench()
+                if not wb or not p then
                     task.wait(2)
-                    -- try once more
-                    wb, prompt = findSeedWorkbench()
-                    if not wb or not prompt then
+                    wb, p = findSeedWorkbench()
+                    if not wb or not p then
                         notify("Seed Craft Error", "Seed workbench lost. Stopping.", 8)
                         break
                     end
                 end
 
-                -- Reset to clean state
-                local action = prompt.ActionText
-                if action ~= "Select Recipe" then
-                    if action == "Claim" then
-                        if PachySlot then SwapToLoadout(PachySlot) end
-                        CraftService:FireServer("Claim", wb, "SeedEventWorkbench", 1)
-                        task.wait(1)
-                    elseif action ~= "Skip" then
-                        CraftService:FireServer("Cancel", wb, "SeedEventWorkbench")
-                        task.wait(1)
-                    end
+                -- ── RESET: cancel or claim any leftover state ──
+                local action = p.ActionText
+                if action == "Claim" then
+                    if PachySlot then SwapToLoadout(PachySlot) end
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
+                elseif action ~= "Select Recipe" and action ~= "Submit Item" then
+                    CraftService:FireServer("Cancel", wb, wbId)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
                 end
-
-                -- Set recipe
-                CraftService:FireServer("SetRecipe", wb, "SeedEventWorkbench", SeedRecipeSelected)
-                task.wait(1)
-
-                -- Swap to Orangutans before submitting
-                if OrangutanSlot and prompt.ActionText == "Submit Item" then
-                    SwapToLoadout(OrangutanSlot)
-                end
-
-                -- Submit all required items
-                handler:SubmitAllRequiredItems(wb)
-                task.wait(1)
 
                 if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
 
-                -- Fire craft
-                CraftService:FireServer("Craft", wb, "SeedEventWorkbench")
-                task.wait(1)
-
-                -- Swap to Forger/Hamster while crafting
-                if ForgerHamsterSlot and prompt.ActionText == "Skip" then
-                    SwapToLoadout(ForgerHamsterSlot)
+                -- ── STEP 1: Set Recipe → wait for "Submit Item" ──
+                CraftService:FireServer("SetRecipe", wb, wbId, SeedRecipeSelected)
+                if not waitForAction(p, "Submit Item", 10, seedOn, seedRecipe) then
+                    task.wait(1); continue
                 end
 
-                -- Wait for craft to finish
-                repeat task.wait(2) until
+                -- ── STEP 2: Swap to Orangutans → Submit All Required Items ──
+                if OrangutanSlot then SwapToLoadout(OrangutanSlot) end
+                handler:SubmitAllRequiredItems(wb)
+
+                -- wait until items are accepted (ActionText leaves "Submit Item")
+                local elapsed = 0
+                while p.ActionText == "Submit Item" and elapsed < 10 do
+                    task.wait(0.5); elapsed = elapsed + 0.5
+                end
+
+                if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
+
+                -- ── STEP 3: Start Crafting → wait for "Skip" (craft in progress) ──
+                CraftService:FireServer("Craft", wb, wbId)
+                if not waitForAction(p, "Skip", 10, seedOn, seedRecipe) then
+                    task.wait(1); continue
+                end
+
+                -- ── STEP 4: Swap to Forger/Hamster while craft runs ──
+                if ForgerHamsterSlot then SwapToLoadout(ForgerHamsterSlot) end
+
+                -- wait for craft to finish ("Skip" → "Claim")
+                repeat task.wait(1) until
                     not AutoCraftSeedsEnabled
                     or not SeedRecipeSelected
-                    or prompt.ActionText ~= "Skip"
+                    or p.ActionText ~= "Skip"
 
-                -- Claim if still running
-                if AutoCraftSeedsEnabled and SeedRecipeSelected then
-                    if PachySlot and prompt.ActionText == "Claim" then
-                        SwapToLoadout(PachySlot)
-                    end
-                    CraftService:FireServer("Claim", wb, "SeedEventWorkbench", 1)
-                    task.wait(1)
+                -- ── STEP 5: Claim result ──
+                if AutoCraftSeedsEnabled and SeedRecipeSelected and p.ActionText == "Claim" then
+                    if PachySlot then SwapToLoadout(PachySlot) end
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
                 end
 
-                task.wait(0.1) -- safety throttle
+                task.wait(0.1)
             end
         end)
 
@@ -571,86 +597,5 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
     })
 
     Event:CreateDivider()
-
-  
-
-    -- ===================== UTILITIES TAB =====================
-    local UtilTab = Window:CreateTab("Utilities", "zap")
-
-    local AutoHoldSubmitEnabled = false
-
-    UtilTab:CreateToggle({
-        Name         = "Auto Hold & Submit Fruits",
-        CurrentValue = false,
-        Flag         = "eventAutoHoldSubmit",
-        Callback     = function(Value)
-            AutoHoldSubmitEnabled = Value
-            task.spawn(function()
-                local ActivationRemote = safeWaitPath(LocalPlayer, 15,
-                    "PlayerScripts", "InputGateway", "Activation")
-                if not ActivationRemote then
-                    notify("Utilities Error", "Activation remote not found.", 8)
-                    return
-                end
-
-                local GameEventsFolder = getGameEvents()
-                local SubmitRemote = GameEventsFolder
-                    and safeWaitPath(GameEventsFolder, 10, "SummerFire", "Submit")
-                if not SubmitRemote then
-                    notify("Utilities Error", "SummerFire Submit remote not found.", 8)
-                    return
-                end
-
-                while AutoHoldSubmitEnabled do
-                    local character = LocalPlayer.Character
-                    local backpack  = LocalPlayer:FindFirstChild("Backpack")
-                    local foundFruit = false
-
-                    if character and backpack then
-                        for _, item in ipairs(backpack:GetChildren()) do
-                            if item:IsA("Tool") then
-                                local name = item.Name:lower()
-                                if not name:find("seed")
-                                    and not name:find("sprinkler")
-                                    and not name:find("can")
-                                    and not name:find("crate")
-                                    and not name:find("tool")
-                                    and not name:find("pet")
-                                    and not name:find("egg")
-                                    and not name:find("ticket")
-                                then
-                                    item.Parent = character
-                                    foundFruit = true
-                                    task.wait(0.1)
-                                    break
-                                end
-                            end
-                        end
-
-                        if not foundFruit then
-                            local Humanoid = character:FindFirstChildOfClass("Humanoid")
-                            if Humanoid then Humanoid:UnequipTools() end
-                        end
-                    end
-
-                    if foundFruit then
-                        local fakeCFrame = CFrame.new(
-                            -184.319519, 0, 43.1255341,
-                            0.830478072, 0.265547037, -0.489684522,
-                            -0, 0.879065394, 0.47670123,
-                            0.557051301, -0.395889908, 0.730044544
-                        )
-                        ActivationRemote:FireServer(true, fakeCFrame)
-                        task.wait(0.1)
-                        SubmitRemote:FireServer()
-                        task.wait(0.4)
-                    else
-                        task.wait(1)
-                    end
-                end
-            end)
-        end,
-    })
-end
 
 return M
