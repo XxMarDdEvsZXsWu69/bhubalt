@@ -9,13 +9,10 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     local PlayerGui        = LocalPlayer.PlayerGui
 
     -- ===================== STATE =====================
-    local AutoCraftCampfireEnabled = false
     local AutoCraftGearEnabled     = false
     local AutoCraftSeedsEnabled    = false
-    local CampfireRecipeSelected   = "1:1:Firepit Flower"
     local GearRecipeSelected       = nil
     local SeedRecipeSelected       = nil
-    local IsCraftingCampfire       = false
     local IsCraftingGear           = false
     local IsCraftingSeeds          = false
     local GearRecipeParagraph      = nil
@@ -147,85 +144,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
     -- ===================== CRAFT LOOPS =====================
 
-    -- ---- Campfire Loop ----
-    local function AutoCraftCampfireLoop()
-        if IsCraftingCampfire then return end
-        IsCraftingCampfire = true
-
-        local ok, err = pcall(function()
-            local GameEvents = getGameEvents()
-            if not GameEvents then
-                notify("Campfire Error", "GameEvents not found.", 8)
-                return
-            end
-            local SummerCraftingService = safeWait(GameEvents, "SummerCraftingService", 10)
-            if not SummerCraftingService then
-                notify("Campfire Error", "SummerCraftingService not found.", 8)
-                return
-            end
-
-            local CampfireRoot = safeWaitPath(PlayerGui, 10,
-                "SummerCrafting", "Crafting", "Main", "Campfire", "Crafting")
-            if not CampfireRoot then
-                notify("Campfire Error", "Campfire UI not found.", 8)
-                return
-            end
-            local TL1 = safeWait(CampfireRoot, "Craft1", 5)
-            local TL2 = safeWait(CampfireRoot, "Craft2", 5)
-            local TL3 = safeWait(CampfireRoot, "Craft3", 5)
-            if not (TL1 and TL2 and TL3) then
-                notify("Campfire Error", "Craft slot UI not found.", 8)
-                return
-            end
-            TL1 = TL1:WaitForChild("TimeLeft", 5)
-            TL2 = TL2:WaitForChild("TimeLeft", 5)
-            TL3 = TL3:WaitForChild("TimeLeft", 5)
-            if not (TL1 and TL2 and TL3) then
-                notify("Campfire Error", "TimeLeft labels not found.", 8)
-                return
-            end
-            local TimesLeft = {TL1, TL2, TL3}
-
-            while AutoCraftCampfireEnabled and CampfireRecipeSelected do
-                local HasOpenSlot = false
-                local HasClaim    = false
-
-                for Index, TimeLeft in ipairs(TimesLeft) do
-                    local ok2 = pcall(function()
-                        if TimeLeft.Visible and TimeLeft.Text == "CLAIM!" then
-                            HasClaim = true
-                            SummerCraftingService.ClaimCraft:FireServer(Index)
-                            task.wait(0.2)
-                        end
-                        if not TimeLeft.Visible then
-                            HasOpenSlot = true
-                        end
-                    end)
-                    if not ok2 then task.wait(0.5) end
-                end
-
-                if HasOpenSlot then
-                    SummerCraftingService.StartCraft:FireServer(CampfireRecipeSelected)
-                    task.wait(0.5)
-                elseif not HasClaim then
-                    repeat task.wait(2) until
-                        not AutoCraftCampfireEnabled
-                        or not CampfireRecipeSelected
-                        or not TL1.Visible or not TL2.Visible or not TL3.Visible
-                        or TL1.Text == "CLAIM!" or TL2.Text == "CLAIM!" or TL3.Text == "CLAIM!"
-                end
-
-                task.wait(0.1)
-            end
-        end)
-
-        IsCraftingCampfire = false
-        if not ok then
-            warn("[BeastHub] AutoCraftCampfireLoop error: " .. tostring(err))
-            notify("Campfire Craft Error", tostring(err):sub(1, 90), 8)
-        end
-    end
-
     -- ---- Gear Loop ----
     local function AutoCraftGearLoop()
         if IsCraftingGear then return end
@@ -334,7 +252,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end
     end
 
-    -- ---- Seeds Loop (Now identical to Gear Logic) ----
+    -- ---- Seeds Loop ----
     local function AutoCraftSeedsLoop()
         if IsCraftingSeeds then return end
 
@@ -402,7 +320,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
                 if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
 
-                -- Match dynamic recipe assignment via SetRecipe
                 CraftService:FireServer("SetRecipe", wb, wbId, SeedRecipeSelected)
                 if not waitForAction(p, "Submit Item", 10, seedOn, seedRecipe) then
                     task.wait(1); continue
@@ -446,47 +363,13 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     -- ===================== TAB UI =====================
     local Event = Window:CreateTab("Craft", "hammer")
 
-    -- ---- Campfire Crafting ----
-    Event:CreateSection("Campfire Crafting")
-
-    Event:CreateToggle({
-        Name         = "Auto-Craft Campfire Recipe",
-        CurrentValue = false,
-        Flag         = "eventAutoCraftCampfire",
-        Callback     = function(Value)
-            AutoCraftCampfireEnabled = Value
-            if Value and CampfireRecipeSelected then
-                task.spawn(AutoCraftCampfireLoop)
-            end
-        end,
-    })
-
-    Event:CreateDropdown({
-        Name    = "Campfire Recipe",
-        Options = {
-            "1:1:Firepit Flower", "1:2:Cauliflower", "2:1:Campfire Crate",
-            "2:2:Common Summer Egg", "2:3:Green Apple", "2:4:Avocado",
-            "3:1:Super Watering Can", "3:2:Areaclaimer", "3:3:Banana", "3:4:Kiwi",
-            "4:1:Hearth Reed", "4:2:Rare Summer Egg", "4:3:Prickly Pear",
-            "5:1:Feijoa", "5:2:Paradise Egg", "5:3:Energy Chew",
-            "5:4:Pitcher Plant", "5:5:Campfire Egg",
-        },
-        CurrentOption  = "1:1:Firepit Flower",
-        MultipleOptions = false,
-        Flag           = "eventCampfireRecipe",
-        Callback       = function(Option)
-            local choice = typeof(Option) == "table" and Option[1] or Option
-            CampfireRecipeSelected = (choice ~= "" and choice) or nil
-            if AutoCraftCampfireEnabled and CampfireRecipeSelected then
-                task.spawn(AutoCraftCampfireLoop)
-            end
-        end,
-    })
-
-    Event:CreateDivider()
-
     -- ---- Gear Crafting ----
     Event:CreateSection("Gear Crafting")
+
+    GearRecipeParagraph = Event:CreateParagraph({
+        Title   = "Selected Gear Recipe:",
+        Content = "None",
+    })
 
     Event:CreateToggle({
         Name         = "Auto-Craft Gear",
@@ -518,11 +401,13 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             local choice = typeof(Option) == "table" and Option[1] or Option
             GearRecipeSelected = (choice and choice ~= "") and choice or nil
             
-            task.spawn(function()
-                if GearRecipeParagraph then
-                    GearRecipeParagraph:Set("Selected Gear Recipe", GearRecipeSelected or "None")
-                end
-            end)
+            local listText = GearRecipeSelected or "None"
+            if GearRecipeParagraph then
+                GearRecipeParagraph:Set({
+                    Title = "Selected Gear Recipe:",
+                    Content = listText
+                })
+            end
 
             if AutoCraftGearEnabled and GearRecipeSelected then
                 task.spawn(AutoCraftGearLoop)
@@ -530,15 +415,15 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end,
     })
     
-    GearRecipeParagraph = Event:CreateParagraph({
-        Title   = "Selected Gear Recipe",
-        Content = "None",
-    })
-
     Event:CreateDivider()
 
     -- ---- Seed Crafting ----
     Event:CreateSection("Seed Crafting")
+
+    SeedRecipeParagraph = Event:CreateParagraph({
+        Title   = "Selected Seed Recipe:",
+        Content = "None",
+    })
 
     Event:CreateToggle({
         Name         = "Auto-Craft Seeds",
@@ -569,21 +454,18 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             local choice = typeof(Option) == "table" and Option[1] or Option
             SeedRecipeSelected = (choice and choice ~= "") and choice or nil
             
-            task.spawn(function()
-                if SeedRecipeParagraph then
-                    SeedRecipeParagraph:Set("Selected Seed Recipe", SeedRecipeSelected or "None")
-                end
-            end)
+            local listText = SeedRecipeSelected or "None"
+            if SeedRecipeParagraph then
+                SeedRecipeParagraph:Set({
+                    Title = "Selected Seed Recipe:",
+                    Content = listText
+                })
+            end
 
             if AutoCraftSeedsEnabled and SeedRecipeSelected then
                 task.spawn(AutoCraftSeedsLoop)
             end
         end,
-    })
-    
-    SeedRecipeParagraph = Event:CreateParagraph({
-        Title   = "Selected Seed Recipe",
-        Content = "None",
     })
 
     Event:CreateDivider()
