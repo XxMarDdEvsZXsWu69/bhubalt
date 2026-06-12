@@ -13,7 +13,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     local AutoCraftGearEnabled     = false
     local AutoCraftSeedsEnabled    = false
     local CampfireRecipeSelected   = "1:1:Firepit Flower"
-    local GearRecipeSelected       = "Gold Ingot"
+    local GearRecipeSelected       = "Lightning Rod"
     local SeedRecipeSelected       = "Egg Melon"
     local IsCraftingCampfire       = false
     local IsCraftingGear           = false
@@ -495,7 +495,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             "5:1:Feijoa", "5:2:Paradise Egg", "5:3:Energy Chew",
             "5:4:Pitcher Plant", "5:5:Campfire Egg",
         },
-        CurrentOption  = {"1:1:Firepit Flower"},
+        CurrentOption  = "1:1:Firepit Flower",
         MultipleOptions = false,
         Flag           = "eventCampfireRecipe",
         Callback       = function(Option)
@@ -534,7 +534,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             "Mutation Spray Pollinated", "Honey Crafters Crate", "Mutation Spray Glimmering",
             "Mutation Spray Chilled", "Mutation Spray Shocked", "Mutation Spray Choc",
         },
-        CurrentOption  = {"Gold Ingot"},
+        CurrentOption  = "Lightning Rod",
         MultipleOptions = false,
         Flag           = "eventGearRecipe",
         Callback       = function(Option)
@@ -581,7 +581,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             "Nectar Thorn", "Suncoil", "Twisted Tangle", "Veinpetal",
             "Horsetail", "Lingonberry", "Amber Spine",
         },
-        CurrentOption  = {"Egg Melon"},
+        CurrentOption  = "Egg Melon",
         MultipleOptions = false,
         Flag           = "eventSeedRecipe",
         Callback       = function(Option)
