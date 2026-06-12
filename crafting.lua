@@ -22,7 +22,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     local SeedRecipeParagraph      = nil
 
     -- ===================== SAFE WAIT-FOR =====================
-    -- Returns the child or nil after timeout, never errors
     local function safeWait(parent, name, timeout)
         if not parent then return nil end
         local ok, result = pcall(function()
@@ -31,7 +30,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         return ok and result or nil
     end
 
-    -- Walk a path like safeWaitPath(root, 10, "A", "B", "C")
     local function safeWaitPath(root, timeout, ...)
         local cur = root
         for _, name in ipairs({...}) do
@@ -41,7 +39,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         return cur
     end
 
-    -- ===================== SERVICES (resolved lazily) =====================
+    -- ===================== SERVICES =====================
     local function getGameEvents()
         return safeWait(ReplicatedStorage, "GameEvents", 15)
     end
@@ -98,7 +96,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         return nil
     end
 
-    local hiddenPlants    = nil -- original parent when hidden
+    local hiddenPlants    = nil
     local hiddenCosmetics = nil
 
     local function SetPlantVisibility(hide)
@@ -136,9 +134,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     end
 
     -- ===================== CRAFT HELPERS =====================
-
-    -- Waits until prompt.ActionText == expected, up to `timeout` seconds.
-    -- Returns true if it matched, false if timed out or toggle turned off.
     local function waitForAction(prompt, expected, timeout, enabledRef, recipeRef)
         local elapsed = 0
         while prompt.ActionText ~= expected do
@@ -152,7 +147,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
     -- ===================== CRAFT LOOPS =====================
 
-    -- ---- Campfire ----
+    -- ---- Campfire Loop ----
     local function AutoCraftCampfireLoop()
         if IsCraftingCampfire then return end
         IsCraftingCampfire = true
@@ -169,7 +164,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 return
             end
 
-            -- Resolve the three slot TimeLeft labels
             local CampfireRoot = safeWaitPath(PlayerGui, 10,
                 "SummerCrafting", "Crafting", "Main", "Campfire", "Crafting")
             if not CampfireRoot then
@@ -214,7 +208,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                     SummerCraftingService.StartCraft:FireServer(CampfireRecipeSelected)
                     task.wait(0.5)
                 elseif not HasClaim then
-                    -- wait until any slot opens or becomes claimable
                     repeat task.wait(2) until
                         not AutoCraftCampfireEnabled
                         or not CampfireRecipeSelected
@@ -222,7 +215,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                         or TL1.Text == "CLAIM!" or TL2.Text == "CLAIM!" or TL3.Text == "CLAIM!"
                 end
 
-                task.wait(0.1) -- safety throttle
+                task.wait(0.1)
             end
         end)
 
@@ -233,7 +226,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end
     end
 
-    -- ---- Gear ----
+    -- ---- Gear Loop ----
     local function AutoCraftGearLoop()
         if IsCraftingGear then return end
 
@@ -243,7 +236,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             return
         end
 
-        -- Resolve workbench + proximity prompt
         local function findGearWorkbench()
             local CraftingTables = workspace:FindFirstChild("CraftingTables")
             if not CraftingTables then return nil, nil end
@@ -291,7 +283,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             local function gearRecipe() return GearRecipeSelected end
 
             while AutoCraftGearEnabled and GearRecipeSelected do
-                -- ── RESET: if stuck mid-flow, cancel or claim before starting ──
                 local action = p.ActionText
                 if action == "Claim" then
                     CraftService:FireServer("Claim", wb, wbId, 1)
@@ -303,16 +294,13 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
                 if not AutoCraftGearEnabled or not GearRecipeSelected then break end
 
-                -- ── STEP 1: Set Recipe → wait for "Submit Item" ──
                 CraftService:FireServer("SetRecipe", wb, wbId, GearRecipeSelected)
                 if not waitForAction(p, "Submit Item", 10, gearOn, gearRecipe) then
                     task.wait(1); continue
                 end
 
-                -- ── STEP 2: Submit All Required Items ──
                 handler:SubmitAllRequiredItems(wb)
 
-                -- wait until items are accepted (ActionText leaves "Submit Item")
                 local elapsed = 0
                 while p.ActionText == "Submit Item" and elapsed < 10 do
                     task.wait(0.5); elapsed = elapsed + 0.5
@@ -320,19 +308,16 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
                 if not AutoCraftGearEnabled or not GearRecipeSelected then break end
 
-                -- ── STEP 3: Start Crafting → wait for "Skip" (craft in progress) ──
                 CraftService:FireServer("Craft", wb, wbId)
                 if not waitForAction(p, "Skip", 10, gearOn, gearRecipe) then
                     task.wait(1); continue
                 end
 
-                -- wait for craft to finish ("Skip" → "Claim")
                 repeat task.wait(1) until
                     not AutoCraftGearEnabled
                     or not GearRecipeSelected
                     or p.ActionText ~= "Skip"
 
-                -- ── STEP 4: Claim result ──
                 if AutoCraftGearEnabled and GearRecipeSelected and p.ActionText == "Claim" then
                     CraftService:FireServer("Claim", wb, wbId, 1)
                     waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
@@ -349,7 +334,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end
     end
 
-    -- ---- Seeds ----
+    -- ---- Seeds Loop (Now identical to Gear Logic) ----
     local function AutoCraftSeedsLoop()
         if IsCraftingSeeds then return end
 
@@ -359,22 +344,28 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             return
         end
 
-        -- Resolve seed workbench
         local function findSeedWorkbench()
             local CraftingTables = workspace:FindFirstChild("CraftingTables")
             if not CraftingTables then return nil, nil end
             local wb = CraftingTables:FindFirstChild("SeedEventCraftingWorkBench")
             if not wb then return nil, nil end
-            local Model = wb:FindFirstChild("Model")
-            if not Model then return nil, nil end
-            local BenchTable = Model:FindFirstChild("BenchTable")
-            if not BenchTable then return nil, nil end
-            local prompt = BenchTable:FindFirstChild("CraftingProximityPrompt")
+            local prompt = nil
+            for _, Model in ipairs(wb:GetChildren()) do
+                if Model.Name == "Model" then
+                    for _, Part in ipairs(Model:GetChildren()) do
+                        if #Part:GetChildren() > 0 then
+                            local p = Part:FindFirstChild("CraftingProximityPrompt")
+                            if p then prompt = p; break end
+                        end
+                    end
+                end
+                if prompt then break end
+            end
             return wb, prompt
         end
 
-        local SeedWorkbench, SeedPrompt = findSeedWorkbench()
-        if not SeedWorkbench or not SeedPrompt then
+        local SeedCraftingWorkBench, SeedCraftingProximityPrompt = findSeedWorkbench()
+        if not SeedCraftingWorkBench or not SeedCraftingProximityPrompt then
             notify("Seed Craft Error", "You cannot craft items in tutorial servers.", 10)
             return
         end
@@ -393,23 +384,13 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 return
             end
 
+            local p    = SeedCraftingProximityPrompt
+            local wb   = SeedCraftingWorkBench
             local wbId = "SeedEventWorkbench"
             local function seedOn()     return AutoCraftSeedsEnabled end
             local function seedRecipe() return SeedRecipeSelected end
 
             while AutoCraftSeedsEnabled and SeedRecipeSelected do
-                -- Re-find workbench each iteration in case it reloads
-                local wb, p = findSeedWorkbench()
-                if not wb or not p then
-                    task.wait(2)
-                    wb, p = findSeedWorkbench()
-                    if not wb or not p then
-                        notify("Seed Craft Error", "Seed workbench lost. Stopping.", 8)
-                        break
-                    end
-                end
-
-                -- ── RESET: cancel or claim any leftover state ──
                 local action = p.ActionText
                 if action == "Claim" then
                     CraftService:FireServer("Claim", wb, wbId, 1)
@@ -421,16 +402,14 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
                 if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
 
-                -- ── STEP 1: Set Recipe → wait for "Submit Item" ──
-                CraftService:FireServer("Craft", wb, wbId, SeedRecipeSelected)
+                -- Match dynamic recipe assignment via SetRecipe
+                CraftService:FireServer("SetRecipe", wb, wbId, SeedRecipeSelected)
                 if not waitForAction(p, "Submit Item", 10, seedOn, seedRecipe) then
                     task.wait(1); continue
                 end
 
-                -- ── STEP 2: Submit All Required Items ──
                 handler:SubmitAllRequiredItems(wb)
 
-                -- wait until items are accepted (ActionText leaves "Submit Item")
                 local elapsed = 0
                 while p.ActionText == "Submit Item" and elapsed < 10 do
                     task.wait(0.5); elapsed = elapsed + 0.5
@@ -438,19 +417,16 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
                 if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
 
-                -- ── STEP 3: Start Crafting → wait for "Skip" (craft in progress) ──
                 CraftService:FireServer("Craft", wb, wbId)
                 if not waitForAction(p, "Skip", 10, seedOn, seedRecipe) then
                     task.wait(1); continue
                 end
 
-                -- wait for craft to finish ("Skip" → "Claim")
                 repeat task.wait(1) until
                     not AutoCraftSeedsEnabled
                     or not SeedRecipeSelected
                     or p.ActionText ~= "Skip"
 
-                -- ── STEP 4: Claim result ──
                 if AutoCraftSeedsEnabled and SeedRecipeSelected and p.ActionText == "Claim" then
                     CraftService:FireServer("Claim", wb, wbId, 1)
                     waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
