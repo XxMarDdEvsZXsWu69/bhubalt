@@ -499,7 +499,8 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         MultipleOptions = false,
         Flag           = "eventCampfireRecipe",
         Callback       = function(Option)
-            CampfireRecipeSelected = (Option ~= "" and Option) or nil
+            local choice = typeof(Option) == "table" and Option[1] or Option
+            CampfireRecipeSelected = (choice ~= "" and choice) or nil
             if AutoCraftCampfireEnabled and CampfireRecipeSelected then
                 task.spawn(AutoCraftCampfireLoop)
             end
@@ -510,6 +511,11 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
     -- ---- Gear Crafting ----
     Event:CreateSection("Gear Crafting")
+    
+    GearRecipeParagraph = Event:CreateParagraph({
+        Title   = "Selected Gear Recipe",
+        Content = GearRecipeSelected,
+    })
 
     Event:CreateToggle({
         Name         = "Auto-Craft Gear",
@@ -538,7 +544,8 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         MultipleOptions = false,
         Flag           = "eventGearRecipe",
         Callback       = function(Option)
-            GearRecipeSelected = (Option ~= "" and Option) or nil
+            local choice = typeof(Option) == "table" and Option[1] or Option
+            GearRecipeSelected = (choice ~= "" and choice) or nil
             if GearRecipeParagraph then
                 GearRecipeParagraph:Set("Selected Gear Recipe", GearRecipeSelected or "None")
             end
@@ -548,15 +555,15 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end,
     })
 
-    GearRecipeParagraph = Event:CreateParagraph({
-        Title   = "Selected Gear Recipe",
-        Content = GearRecipeSelected,
-    })
-
     Event:CreateDivider()
 
     -- ---- Seed Crafting ----
     Event:CreateSection("Seed Crafting")
+    
+    SeedRecipeParagraph = Event:CreateParagraph({
+        Title   = "Selected Seed Recipe",
+        Content = SeedRecipeSelected,
+    })
 
     Event:CreateToggle({
         Name         = "Auto-Craft Seeds",
@@ -584,7 +591,8 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         MultipleOptions = false,
         Flag           = "eventSeedRecipe",
         Callback       = function(Option)
-            SeedRecipeSelected = (Option ~= "" and Option) or nil
+            local choice = typeof(Option) == "table" and Option[1] or Option
+            SeedRecipeSelected = (choice ~= "" and choice) or nil
             if SeedRecipeParagraph then
                 SeedRecipeParagraph:Set("Selected Seed Recipe", SeedRecipeSelected or "None")
             end
@@ -592,11 +600,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 task.spawn(AutoCraftSeedsLoop)
             end
         end,
-    })
-
-    SeedRecipeParagraph = Event:CreateParagraph({
-        Title   = "Selected Seed Recipe",
-        Content = SeedRecipeSelected,
     })
 
     Event:CreateDivider()
