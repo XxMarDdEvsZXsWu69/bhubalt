@@ -9,10 +9,10 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     local PlayerGui        = LocalPlayer.PlayerGui
 
     -- ===================== TAB UI =====================
-    local Event = Window:CreateTab("Craft", "hammer")
+    local Event = Window:CreateTab("Event", "gift")
 
     -- ---- Crafting Section ----
-    Event:CreateSection("Crafting status")
+    Event:CreateSection("Event status")
 
     Event:CreateParagraph({
         Title   = "Status:",
