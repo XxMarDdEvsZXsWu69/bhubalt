@@ -235,6 +235,12 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     local function AutoCraftGearLoop()
         if IsCraftingGear then return end
 
+        local handler = getCraftingStationHandler()
+        if not handler then
+            notify("Gear Craft Error", "Auto-Craft Gear is not supported on your executor.", 10)
+            return
+        end
+
         -- Resolve workbench + proximity prompt
         local function findGearWorkbench()
             local CraftingTables = workspace:FindFirstChild("CraftingTables")
@@ -279,45 +285,55 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             local p    = GearCraftingProximityPrompt
             local wb   = EventCraftingWorkBench
             local wbId = "GearEventWorkbench"
+            local function gearOn()    return AutoCraftGearEnabled end
+            local function gearRecipe() return GearRecipeSelected end
 
             while AutoCraftGearEnabled and GearRecipeSelected do
-                -- ── STEP 1: Select Recipe ──
-                CraftService:FireServer("SelectRecipe", wb, wbId, GearRecipeSelected)
-
-                -- Wait until prompt is ready to craft
-                local elapsed = 0
-                while p.ActionText ~= "Craft" do
-                    if not AutoCraftGearEnabled or not GearRecipeSelected then break end
-                    if elapsed >= 10 then break end
-                    task.wait(0.5)
-                    elapsed = elapsed + 0.5
+                -- ── RESET: if stuck mid-flow, cancel or claim before starting ──
+                local action = p.ActionText
+                if action == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
+                elseif action ~= "Craft" and action ~= "Submit Item" then
+                    CraftService:FireServer("Cancel", wb, wbId)
+                    waitForAction(p, "Craft", 10, gearOn, gearRecipe)
                 end
 
                 if not AutoCraftGearEnabled or not GearRecipeSelected then break end
 
-                -- ── STEP 2: Craft ──
-                CraftService:FireServer("Craft", wb, wbId, GearRecipeSelected)
+                -- ── STEP 1: Set Recipe → wait for "Submit Item" ──
+                CraftService:FireServer("SetRecipe", wb, wbId, GearRecipeSelected)
+                if not waitForAction(p, "Submit Item", 10, gearOn, gearRecipe) then
+                    task.wait(1); continue
+                end
 
-                -- Wait for craft to complete (prompt becomes "Claim")
-                repeat task.wait(1) until
-                    not AutoCraftGearEnabled
-                    or not GearRecipeSelected
-                    or p.ActionText == "Claim"
+                -- ── STEP 2: Submit All Required Items ──
+                handler:SubmitAllRequiredItems(wb)
+
+                -- wait until items are accepted (ActionText leaves "Submit Item")
+                local elapsed = 0
+                while p.ActionText == "Submit Item" and elapsed < 10 do
+                    task.wait(0.5); elapsed = elapsed + 0.5
+                end
 
                 if not AutoCraftGearEnabled or not GearRecipeSelected then break end
 
-                -- ── STEP 3: Claim ──
-                if p.ActionText == "Claim" then
-                    CraftService:FireServer("Claim", wb, wbId, 1)
+                -- ── STEP 3: Start Crafting → wait for "Skip" (craft in progress) ──
+                CraftService:FireServer("Craft", wb, wbId)
+                if not waitForAction(p, "Skip", 10, gearOn, gearRecipe) then
+                    task.wait(1); continue
+                end
 
-                    -- Wait for reset back to initial state
-                    local w = 0
-                    while p.ActionText == "Claim" do
-                        if not AutoCraftGearEnabled or not GearRecipeSelected then break end
-                        if w >= 10 then break end
-                        task.wait(0.5)
-                        w = w + 0.5
-                    end
+                -- wait for craft to finish ("Skip" → "Claim")
+                repeat task.wait(1) until
+                    not AutoCraftGearEnabled
+                    or not GearRecipeSelected
+                    or p.ActionText ~= "Skip"
+
+                -- ── STEP 4: Claim result ──
+                if AutoCraftGearEnabled and GearRecipeSelected and p.ActionText == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
                 end
 
                 task.wait(0.1)
@@ -334,6 +350,12 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     -- ---- Seeds ----
     local function AutoCraftSeedsLoop()
         if IsCraftingSeeds then return end
+
+        local handler = getCraftingStationHandler()
+        if not handler then
+            notify("Seed Craft Error", "Auto-Craft Seeds is not supported on your executor.", 10)
+            return
+        end
 
         -- Resolve seed workbench
         local function findSeedWorkbench()
@@ -370,6 +392,8 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             end
 
             local wbId = "SeedEventWorkbench"
+            local function seedOn()     return AutoCraftSeedsEnabled end
+            local function seedRecipe() return SeedRecipeSelected end
 
             while AutoCraftSeedsEnabled and SeedRecipeSelected do
                 -- Re-find workbench each iteration in case it reloads
@@ -383,43 +407,51 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                     end
                 end
 
-                -- ── STEP 1: Select Recipe ──
-                CraftService:FireServer("SelectRecipe", wb, wbId, SeedRecipeSelected)
-
-                -- Wait until prompt is ready to craft
-                local elapsed = 0
-                while p.ActionText ~= "Craft" do
-                    if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
-                    if elapsed >= 10 then break end
-                    task.wait(0.5)
-                    elapsed = elapsed + 0.5
+                -- ── RESET: cancel or claim any leftover state ──
+                local action = p.ActionText
+                if action == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
+                elseif action ~= "Craft" and action ~= "Submit Item" then
+                    CraftService:FireServer("Cancel", wb, wbId)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
                 end
 
                 if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
 
-                -- ── STEP 2: Craft ──
+                -- ── STEP 1: Set Recipe → wait for "Submit Item" ──
                 CraftService:FireServer("Craft", wb, wbId, SeedRecipeSelected)
+                if not waitForAction(p, "Submit Item", 10, seedOn, seedRecipe) then
+                    task.wait(1); continue
+                end
 
-                -- Wait for craft to complete (prompt becomes "Claim")
-                repeat task.wait(1) until
-                    not AutoCraftSeedsEnabled
-                    or not SeedRecipeSelected
-                    or p.ActionText == "Claim"
+                -- ── STEP 2: Submit All Required Items ──
+                handler:SubmitAllRequiredItems(wb)
+
+                -- wait until items are accepted (ActionText leaves "Submit Item")
+                local elapsed = 0
+                while p.ActionText == "Submit Item" and elapsed < 10 do
+                    task.wait(0.5); elapsed = elapsed + 0.5
+                end
 
                 if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
 
-                -- ── STEP 3: Claim ──
-                if p.ActionText == "Claim" then
-                    CraftService:FireServer("Claim", wb, wbId, 1)
+                -- ── STEP 3: Start Crafting → wait for "Skip" (craft in progress) ──
+                CraftService:FireServer("Craft", wb, wbId)
+                if not waitForAction(p, "Skip", 10, seedOn, seedRecipe) then
+                    task.wait(1); continue
+                end
 
-                    -- Wait for reset back to initial state
-                    local w = 0
-                    while p.ActionText == "Claim" do
-                        if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
-                        if w >= 10 then break end
-                        task.wait(0.5)
-                        w = w + 0.5
-                    end
+                -- wait for craft to finish ("Skip" → "Claim")
+                repeat task.wait(1) until
+                    not AutoCraftSeedsEnabled
+                    or not SeedRecipeSelected
+                    or p.ActionText ~= "Skip"
+
+                -- ── STEP 4: Claim result ──
+                if AutoCraftSeedsEnabled and SeedRecipeSelected and p.ActionText == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
                 end
 
                 task.wait(0.1)
