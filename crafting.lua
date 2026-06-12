@@ -293,7 +293,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 local action = p.ActionText
                 if action == "Claim" then
                     CraftService:FireServer("Claim", wb, wbId, 1)
-                    waitForAction(p, "Craft", 10, gearOn, gearRecipe)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
                 elseif action ~= "Craft" and action ~= "Submit Item" then
                     CraftService:FireServer("Cancel", wb, wbId)
                     waitForAction(p, "Craft", 10, gearOn, gearRecipe)
@@ -333,7 +333,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 -- ── STEP 4: Claim result ──
                 if AutoCraftGearEnabled and GearRecipeSelected and p.ActionText == "Claim" then
                     CraftService:FireServer("Claim", wb, wbId, 1)
-                    waitForAction(p, "Craft", 10, gearOn, gearRecipe)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
                 end
 
                 task.wait(0.1)
@@ -411,7 +411,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 local action = p.ActionText
                 if action == "Claim" then
                     CraftService:FireServer("Claim", wb, wbId, 1)
-                    waitForAction(p, "Craft", 10, seedOn, seedRecipe)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
                 elseif action ~= "Craft" and action ~= "Submit Item" then
                     CraftService:FireServer("Cancel", wb, wbId)
                     waitForAction(p, "Craft", 10, seedOn, seedRecipe)
@@ -451,7 +451,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 -- ── STEP 4: Claim result ──
                 if AutoCraftSeedsEnabled and SeedRecipeSelected and p.ActionText == "Claim" then
                     CraftService:FireServer("Claim", wb, wbId, 1)
-                    waitForAction(p, "Craft", 10, seedOn, seedRecipe)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
                 end
 
                 task.wait(0.1)
