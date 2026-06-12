@@ -1,6 +1,6 @@
 local M = {}
 
-function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
+function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, beastHubIcon)
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local TeleportService  = game:GetService("TeleportService")
     local RunService       = game:GetService("RunService")
@@ -582,5 +582,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, beastHubIcon)
     })
 
     Event:CreateDivider()
+end
 
 return M
