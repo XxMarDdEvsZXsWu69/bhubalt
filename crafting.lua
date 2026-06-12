@@ -13,8 +13,8 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     local AutoCraftGearEnabled     = false
     local AutoCraftSeedsEnabled    = false
     local CampfireRecipeSelected   = "1:1:Firepit Flower"
-    local GearRecipeSelected       = "Lightning Rod"
-    local SeedRecipeSelected       = "Egg Melon"
+    local GearRecipeSelected       = nil
+    local SeedRecipeSelected       = nil
     local IsCraftingCampfire       = false
     local IsCraftingGear           = false
     local IsCraftingSeeds          = false
@@ -514,7 +514,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     
     GearRecipeParagraph = Event:CreateParagraph({
         Title   = "Selected Gear Recipe",
-        Content = GearRecipeSelected,
+        Content = "None",
     })
 
     Event:CreateToggle({
@@ -540,7 +540,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             "Mutation Spray Pollinated", "Honey Crafters Crate", "Mutation Spray Glimmering",
             "Mutation Spray Chilled", "Mutation Spray Shocked", "Mutation Spray Choc",
         },
-        CurrentOption  = "Lightning Rod",
+        CurrentOption  = {},
         MultipleOptions = false,
         Flag           = "eventGearRecipe",
         Callback       = function(Option)
@@ -562,7 +562,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     
     SeedRecipeParagraph = Event:CreateParagraph({
         Title   = "Selected Seed Recipe",
-        Content = SeedRecipeSelected,
+        Content = "None",
     })
 
     Event:CreateToggle({
@@ -587,7 +587,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             "Nectar Thorn", "Suncoil", "Twisted Tangle", "Veinpetal",
             "Horsetail", "Lingonberry", "Amber Spine",
         },
-        CurrentOption  = "Egg Melon",
+        CurrentOption  = {},
         MultipleOptions = false,
         Flag           = "eventSeedRecipe",
         Callback       = function(Option)
