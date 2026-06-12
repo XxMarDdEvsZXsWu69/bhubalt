@@ -294,9 +294,9 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 if action == "Claim" then
                     CraftService:FireServer("Claim", wb, wbId, 1)
                     waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
-                elseif action ~= "Craft" and action ~= "Submit Item" then
+                elseif action ~= "Select Recipe" and action ~= "Craft" and action ~= "Submit Item" then
                     CraftService:FireServer("Cancel", wb, wbId)
-                    waitForAction(p, "Craft", 10, gearOn, gearRecipe)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
                 end
 
                 if not AutoCraftGearEnabled or not GearRecipeSelected then break end
@@ -412,7 +412,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 if action == "Claim" then
                     CraftService:FireServer("Claim", wb, wbId, 1)
                     waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
-                elseif action ~= "Craft" and action ~= "Submit Item" then
+                elseif action ~= "Select Recipe" and action ~= "Craft" and action ~= "Submit Item" then
                     CraftService:FireServer("Cancel", wb, wbId)
                     waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
                 end
