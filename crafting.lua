@@ -545,10 +545,14 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         Flag           = "eventGearRecipe",
         Callback       = function(Option)
             local choice = typeof(Option) == "table" and Option[1] or Option
-            GearRecipeSelected = (choice ~= "" and choice) or nil
-            if GearRecipeParagraph then
-                GearRecipeParagraph:Set("Selected Gear Recipe", GearRecipeSelected or "None")
-            end
+            GearRecipeSelected = (choice and choice ~= "") and choice or nil
+            
+            task.spawn(function()
+                if GearRecipeParagraph then
+                    GearRecipeParagraph:Set("Selected Gear Recipe", GearRecipeSelected or "None")
+                end
+            end)
+
             if AutoCraftGearEnabled and GearRecipeSelected then
                 task.spawn(AutoCraftGearLoop)
             end
@@ -592,10 +596,14 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         Flag           = "eventSeedRecipe",
         Callback       = function(Option)
             local choice = typeof(Option) == "table" and Option[1] or Option
-            SeedRecipeSelected = (choice ~= "" and choice) or nil
-            if SeedRecipeParagraph then
-                SeedRecipeParagraph:Set("Selected Seed Recipe", SeedRecipeSelected or "None")
-            end
+            SeedRecipeSelected = (choice and choice ~= "") and choice or nil
+            
+            task.spawn(function()
+                if SeedRecipeParagraph then
+                    SeedRecipeParagraph:Set("Selected Seed Recipe", SeedRecipeSelected or "None")
+                end
+            end)
+
             if AutoCraftSeedsEnabled and SeedRecipeSelected then
                 task.spawn(AutoCraftSeedsLoop)
             end
