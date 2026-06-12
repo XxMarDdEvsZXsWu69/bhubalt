@@ -293,14 +293,10 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 local action = p.ActionText
                 if action == "Claim" then
                     CraftService:FireServer("Claim", wb, wbId, 1)
-                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
-                elseif action ~= "Select Recipe" and action ~= "Submit Item" then
-                    -- Auto-trigger the proximity prompt to open/reset the station
-                    fireproximityprompt(p)
-                    if not waitForAction(p, "Select Recipe", 5, gearOn, gearRecipe) then
-                        CraftService:FireServer("Cancel", wb, wbId)
-                        waitForAction(p, "Select Recipe", 5, gearOn, gearRecipe)
-                    end
+                    waitForAction(p, "Craft", 10, gearOn, gearRecipe)
+                elseif action ~= "Craft" and action ~= "Submit Item" then
+                    CraftService:FireServer("Cancel", wb, wbId)
+                    waitForAction(p, "Craft", 10, gearOn, gearRecipe)
                 end
 
                 if not AutoCraftGearEnabled or not GearRecipeSelected then break end
@@ -337,7 +333,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 -- ── STEP 4: Claim result ──
                 if AutoCraftGearEnabled and GearRecipeSelected and p.ActionText == "Claim" then
                     CraftService:FireServer("Claim", wb, wbId, 1)
-                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
+                    waitForAction(p, "Craft", 10, gearOn, gearRecipe)
                 end
 
                 task.wait(0.1)
@@ -415,14 +411,10 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 local action = p.ActionText
                 if action == "Claim" then
                     CraftService:FireServer("Claim", wb, wbId, 1)
-                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
-                elseif action ~= "Select Recipe" and action ~= "Submit Item" then
-                    -- Auto-trigger the proximity prompt to open/reset the station
-                    fireproximityprompt(p)
-                    if not waitForAction(p, "Select Recipe", 5, seedOn, seedRecipe) then
-                        CraftService:FireServer("Cancel", wb, wbId)
-                        waitForAction(p, "Select Recipe", 5, seedOn, seedRecipe)
-                    end
+                    waitForAction(p, "Craft", 10, seedOn, seedRecipe)
+                elseif action ~= "Craft" and action ~= "Submit Item" then
+                    CraftService:FireServer("Cancel", wb, wbId)
+                    waitForAction(p, "Craft", 10, seedOn, seedRecipe)
                 end
 
                 if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
@@ -459,7 +451,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 -- ── STEP 4: Claim result ──
                 if AutoCraftSeedsEnabled and SeedRecipeSelected and p.ActionText == "Claim" then
                     CraftService:FireServer("Claim", wb, wbId, 1)
-                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
+                    waitForAction(p, "Craft", 10, seedOn, seedRecipe)
                 end
 
                 task.wait(0.1)
