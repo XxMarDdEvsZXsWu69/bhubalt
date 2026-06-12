@@ -18,6 +18,8 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     local IsCraftingCampfire       = false
     local IsCraftingGear           = false
     local IsCraftingSeeds          = false
+    local GearRecipeParagraph      = nil
+    local SeedRecipeParagraph      = nil
 
     -- ===================== SAFE WAIT-FOR =====================
     -- Returns the child or nil after timeout, never errors
@@ -493,7 +495,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             "5:1:Feijoa", "5:2:Paradise Egg", "5:3:Energy Chew",
             "5:4:Pitcher Plant", "5:5:Campfire Egg",
         },
-        CurrentOption  = {"1:1:Firepit Flower"},
+        CurrentOption  = "1:1:Firepit Flower",
         MultipleOptions = false,
         Flag           = "eventCampfireRecipe",
         Callback       = function(Option)
@@ -522,45 +524,34 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     })
 
     Event:CreateDropdown({
-    Name = "Gear Recipe",
-    Options = {
-        "Lightning Rod", "Tanning Mirror", "Reclaimer", "Event Lantern",
-        "Anti Bee Egg", "Small Toy", "Small Treat", "Pet Pouch", "Pack Bee",
-        "Silver Ingot", "Gold Ingot", "Chimera Stone", "Black Spotty Egg",
-        "Tropical Mist Sprinkler", "Berry Blusher Sprinkler",
-        "Spice Spritzer Sprinkler", "Flower Froster Sprinkler",
-        "Stalk Sprout Sprinkler", "Sweet Soaker Sprinkler",
-        "Mutation Spray Pollinated", "Honey Crafters Crate",
-        "Mutation Spray Glimmering", "Mutation Spray Chilled",
-        "Mutation Spray Shocked", "Mutation Spray Choc",
-    },
-    CurrentOption = nil,
-    MultipleOptions = false,
-    Flag = "eventGearRecipe",
-    PlaceholderText = "Select Recipe",
-    Callback = function(Option)
-        if typeof(Option) == "table" then
-            Option = Option[1]
-        end
+        Name    = "Gear Recipe",
+        Options = {
+            "Lightning Rod", "Tanning Mirror", "Reclaimer", "Event Lantern",
+            "Anti Bee Egg", "Small Toy", "Small Treat", "Pet Pouch", "Pack Bee",
+            "Silver Ingot", "Gold Ingot", "Chimera Stone", "Black Spotty Egg",
+            "Tropical Mist Sprinkler", "Berry Blusher Sprinkler", "Spice Spritzer Sprinkler",
+            "Flower Froster Sprinkler", "Stalk Sprout Sprinkler", "Sweet Soaker Sprinkler",
+            "Mutation Spray Pollinated", "Honey Crafters Crate", "Mutation Spray Glimmering",
+            "Mutation Spray Chilled", "Mutation Spray Shocked", "Mutation Spray Choc",
+        },
+        CurrentOption  = "Lightning Rod",
+        MultipleOptions = false,
+        Flag           = "eventGearRecipe",
+        Callback       = function(Option)
+            GearRecipeSelected = (Option ~= "" and Option) or nil
+            if GearRecipeParagraph then
+                GearRecipeParagraph:Set("Selected Gear Recipe", GearRecipeSelected or "None")
+            end
+            if AutoCraftGearEnabled and GearRecipeSelected then
+                task.spawn(AutoCraftGearLoop)
+            end
+        end,
+    })
 
-        GearRecipeSelected = Option
-
-        GearRecipeParagraph:Set({
-            Title = "Selected Gear Recipe",
-            Content = Option or "None",
-        })
-
-        notify(
-            "Gear Recipe Selected",
-            tostring(Option),
-            4
-        )
-
-        if AutoCraftGearEnabled and GearRecipeSelected then
-            task.spawn(AutoCraftGearLoop)
-        end
-    end,
-})
+    GearRecipeParagraph = Event:CreateParagraph({
+        Title   = "Selected Gear Recipe",
+        Content = GearRecipeSelected,
+    })
 
     Event:CreateDivider()
 
@@ -580,43 +571,33 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     })
 
     Event:CreateDropdown({
-    Name = "Seed Recipe",
-    Options = {
-        "Egg Melon", "Mandrake", "Evo Apple I", "Evo Apple II",
-        "Evo Apple III", "Evo Apple IV", "Olive", "Hollow Bamboo",
-        "Yarrow", "Grand Volcania", "Peace Lily", "Aloe Vera",
-        "Guanabana", "Crafters Seed Pack", "Manuka Flower",
-        "Dandelion", "Lumira", "Honeysuckle", "Bee Balm",
-        "Nectar Thorn", "Suncoil", "Twisted Tangle",
-        "Veinpetal", "Horsetail", "Lingonberry", "Amber Spine",
-    },
-    CurrentOption = nil,
-    MultipleOptions = false,
-    Flag = "eventSeedRecipe",
-    PlaceholderText = "Select Recipe",
-    Callback = function(Option)
-        if typeof(Option) == "table" then
-            Option = Option[1]
-        end
+        Name    = "Seed Recipe",
+        Options = {
+            "Egg Melon", "Mandrake", "Evo Apple I", "Evo Apple II", "Evo Apple III",
+            "Evo Apple IV", "Olive", "Hollow Bamboo", "Yarrow", "Grand Volcania",
+            "Peace Lily", "Aloe Vera", "Guanabana", "Crafters Seed Pack",
+            "Manuka Flower", "Dandelion", "Lumira", "Honeysuckle", "Bee Balm",
+            "Nectar Thorn", "Suncoil", "Twisted Tangle", "Veinpetal",
+            "Horsetail", "Lingonberry", "Amber Spine",
+        },
+        CurrentOption  = "Egg Melon",
+        MultipleOptions = false,
+        Flag           = "eventSeedRecipe",
+        Callback       = function(Option)
+            SeedRecipeSelected = (Option ~= "" and Option) or nil
+            if SeedRecipeParagraph then
+                SeedRecipeParagraph:Set("Selected Seed Recipe", SeedRecipeSelected or "None")
+            end
+            if AutoCraftSeedsEnabled and SeedRecipeSelected then
+                task.spawn(AutoCraftSeedsLoop)
+            end
+        end,
+    })
 
-        SeedRecipeSelected = Option
-
-        SeedRecipeParagraph:Set({
-            Title = "Selected Seed Recipe",
-            Content = Option or "None",
-        })
-
-        notify(
-            "Seed Recipe Selected",
-            tostring(Option),
-            4
-        )
-
-        if AutoCraftSeedsEnabled and SeedRecipeSelected then
-            task.spawn(AutoCraftSeedsLoop)
-        end
-    end,
-})
+    SeedRecipeParagraph = Event:CreateParagraph({
+        Title   = "Selected Seed Recipe",
+        Content = SeedRecipeSelected,
+    })
 
     Event:CreateDivider()
 end
