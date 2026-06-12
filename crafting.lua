@@ -295,8 +295,12 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                     CraftService:FireServer("Claim", wb, wbId, 1)
                     waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
                 elseif action ~= "Select Recipe" and action ~= "Submit Item" then
-                    CraftService:FireServer("Cancel", wb, wbId)
-                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
+                    -- Auto-trigger the proximity prompt to open/reset the station
+                    fireproximityprompt(p)
+                    if not waitForAction(p, "Select Recipe", 5, gearOn, gearRecipe) then
+                        CraftService:FireServer("Cancel", wb, wbId)
+                        waitForAction(p, "Select Recipe", 5, gearOn, gearRecipe)
+                    end
                 end
 
                 if not AutoCraftGearEnabled or not GearRecipeSelected then break end
@@ -413,8 +417,12 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                     CraftService:FireServer("Claim", wb, wbId, 1)
                     waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
                 elseif action ~= "Select Recipe" and action ~= "Submit Item" then
-                    CraftService:FireServer("Cancel", wb, wbId)
-                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
+                    -- Auto-trigger the proximity prompt to open/reset the station
+                    fireproximityprompt(p)
+                    if not waitForAction(p, "Select Recipe", 5, seedOn, seedRecipe) then
+                        CraftService:FireServer("Cancel", wb, wbId)
+                        waitForAction(p, "Select Recipe", 5, seedOn, seedRecipe)
+                    end
                 end
 
                 if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
