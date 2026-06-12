@@ -13,11 +13,13 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     local AutoCraftGearEnabled     = false
     local AutoCraftSeedsEnabled    = false
     local CampfireRecipeSelected   = "1:1:Firepit Flower"
-    local GearRecipeSelected       = "Lightning Rod"
+    local GearRecipeSelected       = "Gold Ingot"
     local SeedRecipeSelected       = "Egg Melon"
     local IsCraftingCampfire       = false
     local IsCraftingGear           = false
     local IsCraftingSeeds          = false
+    local GearRecipeParagraph      = nil
+    local SeedRecipeParagraph      = nil
 
     -- ===================== SAFE WAIT-FOR =====================
     -- Returns the child or nil after timeout, never errors
@@ -532,15 +534,24 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             "Mutation Spray Pollinated", "Honey Crafters Crate", "Mutation Spray Glimmering",
             "Mutation Spray Chilled", "Mutation Spray Shocked", "Mutation Spray Choc",
         },
-        CurrentOption  = {"Lightning Rod"},
+        CurrentOption  = {"Gold Ingot"},
         MultipleOptions = false,
         Flag           = "eventGearRecipe",
         Callback       = function(Option)
             GearRecipeSelected = (Option ~= "" and Option) or nil
+            GearRecipeParagraph:Set({
+                Title   = "Selected Gear Recipe",
+                Content = GearRecipeSelected or "None",
+            })
             if AutoCraftGearEnabled and GearRecipeSelected then
                 task.spawn(AutoCraftGearLoop)
             end
         end,
+    })
+
+    GearRecipeParagraph = Event:CreateParagraph({
+        Title   = "Selected Gear Recipe",
+        Content = GearRecipeSelected,
     })
 
     Event:CreateDivider()
@@ -575,10 +586,19 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         Flag           = "eventSeedRecipe",
         Callback       = function(Option)
             SeedRecipeSelected = (Option ~= "" and Option) or nil
+            SeedRecipeParagraph:Set({
+                Title   = "Selected Seed Recipe",
+                Content = SeedRecipeSelected or "None",
+            })
             if AutoCraftSeedsEnabled and SeedRecipeSelected then
                 task.spawn(AutoCraftSeedsLoop)
             end
         end,
+    })
+
+    SeedRecipeParagraph = Event:CreateParagraph({
+        Title   = "Selected Seed Recipe",
+        Content = SeedRecipeSelected,
     })
 
     Event:CreateDivider()
