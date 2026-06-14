@@ -11,7 +11,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     local BurnFruitSelected     = nil
     local IsBurningPlants       = false
     local BurnStatusParagraph   = nil
-    local BurnFruitDropdown     = nil -- Stored for dynamic resets
+    local BurnFruitDropdown     = nil
 
     -- ===================== SAFE WAIT-FOR =====================
     local function safeWait(parent, name, timeout)
@@ -50,7 +50,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         table.sort(fruitOptions)
     end
 
-    -- ===================== AUTO BURN LOOP =====================
+    -- ===================== AUTO EQUIP & BURN LOOP =====================
     local function AutoBurnPlantsLoop()
         if IsBurningPlants then return end
         IsBurningPlants = true
@@ -63,20 +63,26 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             while AutoBurnPlantsEnabled and BurnFruitSelected do
                 local Char = LocalPlayer.Character
                 local BP = LocalPlayer:FindFirstChild("Backpack")
+                local Humanoid = Char and Char:FindFirstChildOfClass("Humanoid")
                 
-                if Char and BP then
-                    -- Explicit inventory matching for the specific selected tool name
+                if Char and BP and Humanoid and Humanoid.Health > 0 then
+                    -- Locate tool across both potential inventory containers
                     local tool = BP:FindFirstChild(BurnFruitSelected) or Char:FindFirstChild(BurnFruitSelected)
                     
                     if tool and tool:IsA("Tool") then
+                        -- Auto-Held: Force equip the fruit if it's currently unequipped
                         if tool.Parent == BP then
-                            Char:WaitForChild("Humanoid"):EquipTool(tool)
-                            task.wait(0.3)
+                            Humanoid:EquipTool(tool)
+                            task.wait(0.25) -- Safe physical attachment replication block
                         end
-                        SummerService.BurnItem:FireServer()
-                        task.wait(0.5)
+
+                        -- Auto-Burn: Instantly execute fire action on server setup
+                        if tool.Parent == Char then
+                            SummerService.BurnItem:FireServer()
+                            task.wait(0.4) -- Delay for burn transaction processing
+                        end
                     else
-                        -- Target item not found in backpack, wait before recheck loop
+                        -- Selection isn't owned yet, yield back to check again shortly
                         task.wait(1.5)
                     end
                 else
@@ -141,7 +147,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         Callback = function()
             BurnFruitSelected = nil
             
-            -- Reset status visuals
             if BurnStatusParagraph then
                 BurnStatusParagraph:Set({
                     Title = "Selected Fruit to Burn:",
@@ -149,7 +154,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 })
             end
             
-            -- Force Rayfield UI assignment back to empty
             if BurnFruitDropdown then
                 BurnFruitDropdown:Set({})
             end
