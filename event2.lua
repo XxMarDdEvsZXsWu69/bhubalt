@@ -11,6 +11,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     local BurnFruitSelected     = nil
     local IsBurningPlants       = false
     local BurnStatusParagraph   = nil
+    local BurnFruitDropdown     = nil -- Stored for dynamic resets
 
     -- ===================== SAFE WAIT-FOR =====================
     local function safeWait(parent, name, timeout)
@@ -41,7 +42,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     end
 
     local allSeedsData = getAllSeedsTableV2()
-    local fruitOptions = {"None"}
+    local fruitOptions = {}
     if allSeedsData then
         for seedName, _ in pairs(allSeedsData) do
             table.insert(fruitOptions, seedName)
@@ -64,7 +65,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 local BP = LocalPlayer:FindFirstChild("Backpack")
                 
                 if Char and BP then
-                    -- Search specifically for the selected fruit
+                    -- Explicit inventory matching for the specific selected tool name
                     local tool = BP:FindFirstChild(BurnFruitSelected) or Char:FindFirstChild(BurnFruitSelected)
                     
                     if tool and tool:IsA("Tool") then
@@ -75,14 +76,20 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                         SummerService.BurnItem:FireServer()
                         task.wait(0.5)
                     else
-                        task.wait(1.5) -- Wait if item isn't in inventory
+                        -- Target item not found in backpack, wait before recheck loop
+                        task.wait(1.5)
                     end
+                else
+                    task.wait(1)
                 end
                 task.wait(0.1)
             end
         end)
 
         IsBurningPlants = false
+        if not ok then
+            warn("[BeastHub] AutoBurnPlantsLoop error: " .. tostring(err))
+        end
     end
 
     -- ===================== TAB UI =====================
@@ -106,15 +113,15 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end,
     })
 
-    CampfireTab:CreateDropdown({
+    BurnFruitDropdown = CampfireTab:CreateDropdown({
         Name    = "Select Fruit to Burn",
         Options = fruitOptions,
-        CurrentOption   = {"None"},
+        CurrentOption   = {},
         MultipleOptions = false,
         Flag            = "eventBurnFruitSelect",
         Callback        = function(Option)
             local choice = typeof(Option) == "table" and Option[1] or Option
-            BurnFruitSelected = (choice ~= "None" and choice ~= "") and choice or nil
+            BurnFruitSelected = (choice and choice ~= "") and choice or nil
             
             if BurnStatusParagraph then
                 BurnStatusParagraph:Set({
@@ -125,6 +132,26 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
             if AutoBurnPlantsEnabled and BurnFruitSelected then
                 task.spawn(AutoBurnPlantsLoop)
+            end
+        end,
+    })
+
+    CampfireTab:CreateButton({
+        Name = "Clear Selected Fruit",
+        Callback = function()
+            BurnFruitSelected = nil
+            
+            -- Reset status visuals
+            if BurnStatusParagraph then
+                BurnStatusParagraph:Set({
+                    Title = "Selected Fruit to Burn:",
+                    Content = "None"
+                })
+            end
+            
+            -- Force Rayfield UI assignment back to empty
+            if BurnFruitDropdown then
+                BurnFruitDropdown:Set({})
             end
         end,
     })
