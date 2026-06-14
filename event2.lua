@@ -7,10 +7,10 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     local PlayerGui        = LocalPlayer.PlayerGui
 
     -- ===================== STATE =====================
-    local AutoCraftCampfireEnabled = false
-    local CampfireRecipeSelected   = nil -- Default to nil/none
-    local IsCraftingCampfire       = false
-    local CampfireRecipeParagraph  = nil
+    local AutoBurnPlantsEnabled = false
+    local BurnFruitSelected     = nil
+    local IsBurningPlants       = false
+    local BurnStatusParagraph   = nil
 
     -- ===================== SAFE WAIT-FOR =====================
     local function safeWait(parent, name, timeout)
@@ -30,119 +30,101 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         return cur
     end
 
-    -- ===================== HELPERS =====================
-    local function notify(title, content, duration)
-        Rayfield:Notify({
-            Title    = title,
-            Content  = content,
-            Duration = duration or 6,
-            Image    = beastHubIcon,
-        })
+    -- ===================== DATA LOADING =====================
+    local function getAllSeedsTableV2()
+        local PlantDataModule = safeWaitPath(ReplicatedStorage, 15, 
+            "Modules", "GardenGuideModules", "DataModules", "PlantData")
+        if not PlantDataModule then return nil end
+        
+        local ok, PlantData = pcall(function() return require(PlantDataModule) end)
+        return (ok and typeof(PlantData) == "table" and typeof(PlantData.Data) == "table") and PlantData.Data or nil
     end
 
-    -- ===================== CRAFT LOOPS =====================
-    local function AutoCraftCampfireLoop()
-        if IsCraftingCampfire then return end
-        IsCraftingCampfire = true
+    local allSeedsData = getAllSeedsTableV2()
+    local fruitOptions = {"None"}
+    if allSeedsData then
+        for seedName, _ in pairs(allSeedsData) do
+            table.insert(fruitOptions, seedName)
+        end
+        table.sort(fruitOptions)
+    end
+
+    -- ===================== AUTO BURN LOOP =====================
+    local function AutoBurnPlantsLoop()
+        if IsBurningPlants then return end
+        IsBurningPlants = true
 
         local ok, err = pcall(function()
             local GameEvents = safeWait(ReplicatedStorage, "GameEvents", 15)
-            if not GameEvents then return end
-            
-            local SummerCraftingService = safeWait(GameEvents, "SummerCraftingService", 10)
-            if not SummerCraftingService then return end
+            local SummerService = safeWait(GameEvents, "SummerCraftingService", 10)
+            if not SummerService then return end
 
-            local CampfireRoot = safeWaitPath(PlayerGui, 10,
-                "SummerCrafting", "Crafting", "Main", "Campfire", "Crafting")
-            
-            if not CampfireRoot then
-                notify("Campfire Error", "Please open the Campfire menu.", 5)
-                return
-            end
-
-            while AutoCraftCampfireEnabled and CampfireRecipeSelected do
-                local HasOpenSlot = false
-                local HasClaim    = false
-
-                for i = 1, 3 do
-                    local SlotUI = CampfireRoot:FindFirstChild("Craft" .. i)
-                    if SlotUI then
-                        local TimeLeft = SlotUI:FindFirstChild("TimeLeft")
-                        if TimeLeft then
-                            if TimeLeft.Visible and TimeLeft.Text == "CLAIM!" then
-                                HasClaim = true
-                                SummerCraftingService.ClaimCraft:FireServer(i)
-                                task.wait(0.3)
-                            end
-                            if not TimeLeft.Visible then
-                                HasOpenSlot = true
-                            end
+            while AutoBurnPlantsEnabled and BurnFruitSelected do
+                local Char = LocalPlayer.Character
+                local BP = LocalPlayer:FindFirstChild("Backpack")
+                
+                if Char and BP then
+                    -- Search specifically for the selected fruit
+                    local tool = BP:FindFirstChild(BurnFruitSelected) or Char:FindFirstChild(BurnFruitSelected)
+                    
+                    if tool and tool:IsA("Tool") then
+                        if tool.Parent == BP then
+                            Char:WaitForChild("Humanoid"):EquipTool(tool)
+                            task.wait(0.3)
                         end
+                        SummerService.BurnItem:FireServer()
+                        task.wait(0.5)
+                    else
+                        task.wait(1.5) -- Wait if item isn't in inventory
                     end
-                end
-
-                if HasOpenSlot then
-                    SummerCraftingService.StartCraft:FireServer(CampfireRecipeSelected)
-                    task.wait(0.8)
-                elseif not HasClaim then
-                    task.wait(2)
                 end
                 task.wait(0.1)
             end
         end)
 
-        IsCraftingCampfire = false
+        IsBurningPlants = false
     end
 
     -- ===================== TAB UI =====================
     local CampfireTab = Window:CreateTab("Campfire", "flame")
+    CampfireTab:CreateSection("Auto Burn Event")
 
-    CampfireTab:CreateSection("Campfire Crafting")
-
-    CampfireRecipeParagraph = CampfireTab:CreateParagraph({
-        Title   = "Selected Campfire Recipe:",
+    BurnStatusParagraph = CampfireTab:CreateParagraph({
+        Title   = "Selected Fruit to Burn:",
         Content = "None",
     })
 
     CampfireTab:CreateToggle({
-        Name         = "Auto-Craft Campfire",
+        Name         = "Auto Hold & Burn Plants",
         CurrentValue = false,
-        Flag         = "eventAutoCraftCampfire",
+        Flag         = "eventAutoBurnPlants",
         Callback     = function(Value)
-            AutoCraftCampfireEnabled = Value
-            if Value and CampfireRecipeSelected then
-                task.spawn(AutoCraftCampfireLoop)
+            AutoBurnPlantsEnabled = Value
+            if Value and BurnFruitSelected then
+                task.spawn(AutoBurnPlantsLoop)
             end
         end,
     })
 
     CampfireTab:CreateDropdown({
-        Name    = "Campfire Recipe",
-        Options = {
-            "1:1:Firepit Flower", "1:2:Cauliflower", "2:1:Campfire Crate",
-            "2:2:Common Summer Egg", "2:3:Green Apple", "2:4:Avocado",
-            "3:1:Super Watering Can", "3:2:Areaclaimer", "3:3:Banana", "3:4:Kiwi",
-            "4:1:Hearth Reed", "4:2:Rare Summer Egg", "4:3:Prickly Pear",
-            "5:1:Feijoa", "5:2:Paradise Egg", "5:3:Energy Chew",
-            "5:4:Pitcher Plant", "5:5:Campfire Egg",
-        },
-        CurrentOption   = {},
+        Name    = "Select Fruit to Burn",
+        Options = fruitOptions,
+        CurrentOption   = {"None"},
         MultipleOptions = false,
-        Flag            = "eventCampfireRecipe",
+        Flag            = "eventBurnFruitSelect",
         Callback        = function(Option)
             local choice = typeof(Option) == "table" and Option[1] or Option
-            CampfireRecipeSelected = (choice and choice ~= "") and choice or nil
+            BurnFruitSelected = (choice ~= "None" and choice ~= "") and choice or nil
             
-            local listText = CampfireRecipeSelected or "None"
-            if CampfireRecipeParagraph then
-                CampfireRecipeParagraph:Set({
-                    Title = "Selected Campfire Recipe:",
-                    Content = listText
+            if BurnStatusParagraph then
+                BurnStatusParagraph:Set({
+                    Title = "Selected Fruit to Burn:",
+                    Content = BurnFruitSelected or "None"
                 })
             end
 
-            if AutoCraftCampfireEnabled and CampfireRecipeSelected then
-                task.spawn(AutoCraftCampfireLoop)
+            if AutoBurnPlantsEnabled and BurnFruitSelected then
+                task.spawn(AutoBurnPlantsLoop)
             end
         end,
     })
