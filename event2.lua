@@ -249,12 +249,12 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     CampfireTab:CreateDropdown({
         Name    = "Campfire Recipe",
         Options = {
-            "Firepit Flower", "Cauliflower", "Campfire Crate",
-            "Common Summer Egg", "Green Apple", "Avocado",
-            "Super Watering Can", "Areaclaimer", "Banana", "Kiwi",
-            "Hearth Reed", "Rare Summer Egg", "Prickly Pear",
-            "Feijoa", "Paradise Egg", "Energy Chew",
-            "Pitcher Plant", "Campfire Egg",
+            "1:1:Firepit Flower", "1:2:Cauliflower", "2:1:Campfire Crate",
+            "2:2:Common Summer Egg", "2:3:Green Apple", "2:4:Avocado",
+            "3:1:Super Watering Can", "3:2:Areaclaimer", "3:3:Banana", "3:4:Kiwi",
+            "4:1:Hearth Reed", "4:2:Rare Summer Egg", "4:3:Prickly Pear",
+            "5:1:Feijoa", "5:2:Paradise Egg", "5:3:Energy Chew",
+            "5:4:Pitcher Plant", "5:5:Campfire Egg",
         },
         CurrentOption   = {},
         MultipleOptions = false,
