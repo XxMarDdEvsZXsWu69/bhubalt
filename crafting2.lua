@@ -154,24 +154,46 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     end
     table.sort(fruitDropdownPool)
 
-    -- ===================== WORKBENCH FINDERS =====================
+-- ===================== IMPROVED WORKBENCH FINDER =====================
     local function findWorkbench(wbName)
-        local CraftingTables = safeWait(workspace, "CraftingTables", 15)
-        if not CraftingTables then return nil, nil end
-        local wb = safeWait(CraftingTables, wbName, 15)
-        if not wb then return nil, nil end
-        local prompt = nil
-        for _, Model in ipairs(wb:GetChildren()) do
-            if Model.Name == "Model" then
-                for _, Part in ipairs(Model:GetChildren()) do
-                    if #Part:GetChildren() > 0 then
-                        local p = Part:FindFirstChild("CraftingProximityPrompt")
-                        if p then prompt = p; break end
+        -- Look in the standard folder first
+        local CraftingTables = workspace:FindFirstChild("CraftingTables")
+        
+        -- Fallback: If the specific folder isn't there, search Workspace (common in some game zones)
+        local root = CraftingTables or workspace
+        
+        -- Try to find by exact name first
+        local wb = root:FindFirstChild(wbName)
+        
+        -- If not found by name, let's look for ANY workbench that has the prompt
+        if not wb then
+            for _, child in ipairs(root:GetChildren()) do
+                if child:IsA("Model") or child:IsA("Folder") then
+                    -- Check if this model has the required prompt inside it
+                    if child:FindFirstChild("CraftingProximityPrompt", true) then
+                        -- Optional: check if name is similar
+                        if string.find(child.Name, "Workbench") or string.find(child.Name, "Craft") then
+                            wb = child
+                            break
+                        end
                     end
                 end
             end
-            if prompt then break end
         end
+
+        if not wb then return nil, nil end
+
+        -- Find the prompt inside the model (searching descendants is safer)
+        local prompt = wb:FindFirstChild("CraftingProximityPrompt", true)
+        
+        -- If the prompt is buried in a specific 'Model' child like your original script:
+        if not prompt then
+            local modelChild = wb:FindFirstChild("Model")
+            if modelChild then
+                prompt = modelChild:FindFirstChild("CraftingProximityPrompt", true)
+            end
+        end
+
         return wb, prompt
     end
 
