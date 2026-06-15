@@ -118,10 +118,9 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         IsCraftingCampfire = false
     end
 
-    -- ===================== NEW SUBMIT FRUITS LOOP =====================
+    -- ===================== FIXED SUBMIT FRUITS LOOP =====================
     task.spawn(function()
         while true do
-            -- Dynamic pause delay handler based on UI selections
             task.wait(BurnSpeedDelay)
             
             if AutoBurnPlantsEnabled and BurnFruitSelected and BurnFruitSelected ~= "None" then
@@ -143,33 +142,34 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                     local character = LocalPlayer.Character
                     local backpack = LocalPlayer:FindFirstChild("Backpack")
                     local foundFruit = false
+                    local searchName = tostring(BurnFruitSelected):lower()
 
                     if character and backpack then
-                        -- First check if we are already holding the targeted fruit
+                        -- 1. Check if we are already holding the targeted fruit (relaxed lower-case match)
                         for _, item in ipairs(character:GetChildren()) do
-                            if item:IsA("Tool") and item.Name == BurnFruitSelected then
+                            if item:IsA("Tool") and string.find(item.Name:lower(), searchName) then
                                 foundFruit = true
                                 break
                             end
                         end
 
-                        -- If not holding it, look for it in the backpack
+                        -- 2. If not holding it, look for it inside the backpack
                         if not foundFruit then
                             for _, item in ipairs(backpack:GetChildren()) do
-                                if item:IsA("Tool") and item.Name == BurnFruitSelected then
+                                if item:IsA("Tool") and string.find(item.Name:lower(), searchName) then
                                     local name = item.Name:lower()
-                                    -- Safety structural exclusions from your prompt logic
+                                    -- Apply your strict filters
                                     if not name:find("seed") and not name:find("sprinkler") and not name:find("can") and not name:find("crate") and not name:find("tool") and not name:find("pet") and not name:find("egg") and not name:find("ticket") then
                                         item.Parent = character
                                         foundFruit = true
-                                        task.wait(0.1) -- Equipment window buffer
+                                        task.wait(0.15) -- Slightly extended equip time safety buffer
                                         break
                                     end
                                 end
                             end
                         end
 
-                        -- Clear hands if the specifically selected fruit is gone/not found
+                        -- 3. If still not found anywhere, clear tool selections
                         if not foundFruit then
                             local Humanoid = character:FindFirstChildOfClass("Humanoid")
                             if Humanoid then
@@ -201,7 +201,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                         task.wait(0.1)
 
                         SubmitRemote:FireServer()
-                        -- Additional throttle window compensation logic based on global delay selections
+                        
                         if BurnSpeedDelay == 1.0 then
                             task.wait(0.4)
                         else
