@@ -2,7 +2,7 @@ local M = {}
 
 function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, beastHubIcon)
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local TeleportService   = game:GetService("TeleportService")
+    local TeleportService  = game:GetService("TeleportService")
     local RunService       = game:GetService("RunService")
     local Players          = game:GetService("Players")
     local LocalPlayer      = Players.LocalPlayer
@@ -130,14 +130,21 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end
     end
 
-    -- ===================== MOCK PROXIMITY PROMPT FOR BYPASS =====================
-    local function generateMockPrompt()
-        return { ActionText = "Select Recipe" }
+    -- ===================== CRAFT HELPERS =====================
+    local function waitForAction(prompt, expected, timeout, enabledRef, recipeRef)
+        local elapsed = 0
+        while prompt.ActionText ~= expected do
+            if elapsed >= timeout then return false end
+            if not enabledRef() or not recipeRef() then return false end
+            task.wait(0.5)
+            elapsed = elapsed + 0.5
+        end
+        return true
     end
 
     -- ===================== CRAFT LOOPS =====================
 
-    -- ---- Gear Loop (Bypassed) ----
+    -- ---- Gear Loop ----
     local function AutoCraftGearLoop()
         if IsCraftingGear then return end
 
@@ -147,15 +154,39 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             return
         end
 
-        -- Bypass active search: Look for the real workbench if it exists, otherwise pass an empty instance container to bypass the nil block
-        local CraftingTables = workspace:FindFirstChild("CraftingTables")
-        local RealWorkbench = CraftingTables and CraftingTables:FindFirstChild("EventCraftingWorkBench")
-        local EventCraftingWorkBench = RealWorkbench or Instance.new("Folder") 
-        
-        -- Create a fake prompt to prevent script crashing during verification loops
-        local p = generateMockPrompt()
-        local wb = EventCraftingWorkBench
-        local wbId = "GearEventWorkbench"
+        local function findGearWorkbench()
+            local CraftingTables = workspace:FindFirstChild("CraftingTables")
+            if not CraftingTables then return nil, nil end
+            
+            -- FALLBACK FIX: Check map variations/children dynamically if strict index fails
+            local wb = CraftingTables:FindFirstChild("EventCraftingWorkBench") or CraftingTables:FindFirstChild("CraftingWorkBench")
+            if not wb then
+                for _, obj in ipairs(CraftingTables:GetChildren()) do
+                    if obj.Name:lower():find("workbench") and not obj.Name:lower():find("seed") then
+                        wb = obj
+                        break
+                    end
+                end
+            end
+            if not wb then return nil, nil end
+            
+            local prompt = wb:GetComponentInChildren("ProximityPrompt") or wb:FindFirstChildOfClass("ProximityPrompt")
+            if not prompt then
+                for _, desc in ipairs(wb:GetDescendants()) do
+                    if desc:IsA("ProximityPrompt") then
+                        prompt = desc
+                        break
+                    end
+                end
+            end
+            return wb, prompt
+        end
+
+        local EventCraftingWorkBench, GearCraftingProximityPrompt = findGearWorkbench()
+        if not EventCraftingWorkBench or not GearCraftingProximityPrompt then
+            notify("Gear Craft Warning", "Looking for local workbench instance...", 4)
+            return
+        end
 
         IsCraftingGear = true
 
@@ -171,28 +202,57 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 return
             end
 
+            local p    = GearCraftingProximityPrompt
+            local wb   = EventCraftingWorkBench
+            local wbId = wb.Name
+            local function gearOn()    return AutoCraftGearEnabled end
+            local function gearRecipe() return GearRecipeSelected end
+
             while AutoCraftGearEnabled and GearRecipeSelected do
-                -- Direct remote bypass firing sequences
-                CraftService:FireServer("Claim", wb, wbId, 1)
-                task.wait(0.3)
-                
+                local action = p.ActionText
+                if action == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
+                elseif action ~= "Select Recipe" and action ~= "Craft" and action ~= "Submit Item" then
+                    CraftService:FireServer("Cancel", wb, wbId)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
+                end
+
                 if not AutoCraftGearEnabled or not GearRecipeSelected then break end
 
                 CraftService:FireServer("SetRecipe", wb, wbId, GearRecipeSelected)
-                task.wait(0.5)
-
-                if RealWorkbench and handler.SubmitAllRequiredItems then
-                    pcall(function() handler:SubmitAllRequiredItems(wb) end)
+                if not waitForAction(p, "Submit Item", 10, gearOn, gearRecipe) then
+                    task.wait(1); continue
                 end
-                task.wait(0.5)
+
+                -- FIXED: Submit items sequence mirroring matching style payloads
+                pcall(function()
+                    handler:SubmitAllRequiredItems(wb)
+                end)
+
+                local elapsed = 0
+                while p.ActionText == "Submit Item" and elapsed < 10 do
+                    task.wait(0.5); elapsed = elapsed + 0.5
+                end
 
                 if not AutoCraftGearEnabled or not GearRecipeSelected then break end
 
                 CraftService:FireServer("Craft", wb, wbId)
-                task.wait(0.5)
-                
-                CraftService:FireServer("Claim", wb, wbId, 1)
-                task.wait(1)
+                if not waitForAction(p, "Skip", 10, gearOn, gearRecipe) then
+                    task.wait(1); continue
+                end
+
+                repeat task.wait(1) until
+                    not AutoCraftGearEnabled
+                    or not GearRecipeSelected
+                    or p.ActionText ~= "Skip"
+
+                if AutoCraftGearEnabled and GearRecipeSelected and p.ActionText == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
+                end
+
+                task.wait(0.1)
             end
         end)
 
@@ -203,7 +263,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end
     end
 
-    -- ---- Seeds Loop (Bypassed) ----
+    -- ---- Seeds Loop ----
     local function AutoCraftSeedsLoop()
         if IsCraftingSeeds then return end
 
@@ -213,14 +273,39 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             return
         end
 
-        -- Bypass active search
-        local CraftingTables = workspace:FindFirstChild("CraftingTables")
-        local RealWorkbench = CraftingTables and CraftingTables:FindFirstChild("SeedEventCraftingWorkBench")
-        local SeedCraftingWorkBench = RealWorkbench or Instance.new("Folder")
+        local function findSeedWorkbench()
+            local CraftingTables = workspace:FindFirstChild("CraftingTables")
+            if not CraftingTables then return nil, nil end
+            
+            -- FALLBACK FIX: Check map variations dynamically if strict index fails
+            local wb = CraftingTables:FindFirstChild("SeedEventCraftingWorkBench") or CraftingTables:FindFirstChild("SeedCraftingWorkBench")
+            if not wb then
+                for _, obj in ipairs(CraftingTables:GetChildren()) do
+                    if obj.Name:lower():find("seed") then
+                        wb = obj
+                        break
+                    end
+                end
+            end
+            if not wb then return nil, nil end
+            
+            local prompt = wb:GetComponentInChildren("ProximityPrompt") or wb:FindFirstChildOfClass("ProximityPrompt")
+            if not prompt then
+                for _, desc in ipairs(wb:GetDescendants()) do
+                    if desc:IsA("ProximityPrompt") then
+                        prompt = desc
+                        break
+                    end
+                end
+            end
+            return wb, prompt
+        end
 
-        local p = generateMockPrompt()
-        local wb = SeedCraftingWorkBench
-        local wbId = "SeedEventWorkbench"
+        local SeedCraftingWorkBench, SeedCraftingProximityPrompt = findSeedWorkbench()
+        if not SeedCraftingWorkBench or not SeedCraftingProximityPrompt then
+            notify("Seed Craft Warning", "Looking for local seed workbench instance...", 4)
+            return
+        end
 
         IsCraftingSeeds = true
 
@@ -236,28 +321,57 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 return
             end
 
+            local p    = SeedCraftingProximityPrompt
+            local wb   = SeedCraftingWorkBench
+            local wbId = wb.Name
+            local function seedOn()     return AutoCraftSeedsEnabled end
+            local function seedRecipe() return SeedRecipeSelected end
+
             while AutoCraftSeedsEnabled and SeedRecipeSelected do
-                -- Direct remote bypass firing sequences
-                CraftService:FireServer("Claim", wb, wbId, 1)
-                task.wait(0.3)
+                local action = p.ActionText
+                if action == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
+                elseif action ~= "Select Recipe" and action ~= "Craft" and action ~= "Submit Item" then
+                    CraftService:FireServer("Cancel", wb, wbId)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
+                end
 
                 if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
 
                 CraftService:FireServer("SetRecipe", wb, wbId, SeedRecipeSelected)
-                task.wait(0.5)
-
-                if RealWorkbench and handler.SubmitAllRequiredItems then
-                    pcall(function() handler:SubmitAllRequiredItems(wb) end)
+                if not waitForAction(p, "Submit Item", 10, seedOn, recipeRef) then
+                    task.wait(1); continue
                 end
-                task.wait(0.5)
+
+                -- FIXED: Submit items sequence mirroring matching style payloads
+                pcall(function()
+                    handler:SubmitAllRequiredItems(wb)
+                end)
+
+                local elapsed = 0
+                while p.ActionText == "Submit Item" and elapsed < 10 do
+                    task.wait(0.5); elapsed = elapsed + 0.5
+                end
 
                 if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
 
                 CraftService:FireServer("Craft", wb, wbId)
-                task.wait(0.5)
+                if not waitForAction(p, "Skip", 10, seedOn, seedRecipe) then
+                    task.wait(1); continue
+                end
 
-                CraftService:FireServer("Claim", wb, wbId, 1)
-                task.wait(1)
+                repeat task.wait(1) until
+                    not AutoCraftSeedsEnabled
+                    or not SeedRecipeSelected
+                    or p.ActionText ~= "Skip"
+
+                if AutoCraftSeedsEnabled and SeedRecipeSelected and p.ActionText == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
+                end
+
+                task.wait(0.1)
             end
         end)
 
@@ -302,7 +416,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             "Mutation Spray Pollinated", "Honey Crafters Crate", "Mutation Spray Glimmering",
             "Mutation Spray Chilled", "Mutation Spray Shocked", "Mutation Spray Choc",
         },
-        CurrentOption   = {},
+        CurrentOption  = {},
         MultipleOptions = false,
         Flag           = "eventGearRecipe",
         Callback       = function(Option)
@@ -355,7 +469,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             "Nectar Thorn", "Suncoil", "Twisted Tangle", "Veinpetal",
             "Horsetail", "Lingonberry", "Amber Spine",
         },
-        CurrentOption   = {},
+        CurrentOption  = {},
         MultipleOptions = false,
         Flag           = "eventSeedRecipe",
         Callback       = function(Option)
