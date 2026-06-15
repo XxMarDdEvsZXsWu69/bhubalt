@@ -64,26 +64,32 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         return safeWait(ReplicatedStorage, "GameEvents", 15)
     end
 
-    -- Recursive workspace search for a workbench by name
-    local function findWorkbenchAnywhere(wbName)
-        local wb = workspace:FindFirstChild(wbName, true)
-        if not wb then return nil end
-        return wb
+    -- Require the CraftingStationHandler module (handles SubmitAllRequiredItems)
+    local function getCraftingStationHandler()
+        local ok, handler = pcall(function()
+            return require(ReplicatedStorage.Modules.CraftingStationHandler)
+        end)
+        return ok and handler or nil
     end
 
-    -- Find and click a UI button anywhere in PlayerGui by partial text match
-    local function clickButtonByText(searchText)
-        local lowerSearch = searchText:lower()
-        for _, v in ipairs(PlayerGui:GetDescendants()) do
-            if (v:IsA("TextButton") or v:IsA("ImageButton")) then
-                local btnText = (v:IsA("TextButton") and v.Text or ""):lower()
-                if string.find(btnText, lowerSearch) and v.Visible then
-                    v.MouseButton1Click:Fire()
-                    return true
-                end
-            end
+    -- Wait for a proximity prompt's ActionText to reach an expected value
+    local function waitForAction(prompt, expected, timeout, enabledRef, recipeRef)
+        local elapsed = 0
+        while prompt.ActionText ~= expected do
+            if elapsed >= timeout then return false end
+            if not enabledRef() or not recipeRef() then return false end
+            task.wait(0.5)
+            elapsed = elapsed + 0.5
         end
-        return false
+        return true
+    end
+
+    -- Recursively find a workbench and its CraftingProximityPrompt anywhere in workspace
+    local function findWorkbenchAndPrompt(wbName)
+        local wb = workspace:FindFirstChild(wbName, true)
+        if not wb then return nil, nil end
+        local prompt = wb:FindFirstChild("CraftingProximityPrompt", true)
+        return wb, prompt
     end
 
     -- ===================== FARM HELPERS =====================
@@ -163,40 +169,79 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     local function AutoCraftGearLoop()
         if IsCraftingGear then return end
 
+        local handler = getCraftingStationHandler()
+        if not handler then
+            notify("Gear Craft Error", "CraftingStationHandler not available on your executor.", 10)
+            return
+        end
+
         local GameEvents = safeWait(ReplicatedStorage, "GameEvents", 15)
         if not GameEvents then
             notify("Gear Craft Error", "GameEvents not found.", 8)
             return
         end
 
-        local CraftService = safeWait(GameEvents, "CraftingGlobalObjectService", 15)
+        local CraftService = GameEvents:FindFirstChild("CraftingGlobalObjectService")
         if not CraftService then
-            notify("Gear Craft Error", "CraftingGlobalObjectService not found.", 10)
+            notify("Gear Craft Error", "CraftingGlobalObjectService not found.", 8)
             return
         end
 
-        local wb  = findWorkbenchAnywhere("EventCraftingWorkBench")
+        local wb, p = findWorkbenchAndPrompt("EventCraftingWorkBench")
+        if not wb or not p then
+            notify("Gear Craft Error", "Gear workbench not found in this server.", 10)
+            return
+        end
+
         local wbId = "GearEventWorkbench"
+        local function gearOn()     return AutoCraftGearEnabled end
+        local function gearRecipe() return GearRecipeSelected end
 
         IsCraftingGear = true
 
         local ok, err = pcall(function()
             while AutoCraftGearEnabled and GearRecipeSelected do
-                -- Action 1: Auto Craft (set the selected recipe)
-                CraftService:FireServer("SetRecipe", wb, wbId, GearRecipeSelected)
-                task.wait(0.5)
-
-                -- Action 2: Auto Submit All (find "Submit All" button in UI and click it)
-                local clicked = clickButtonByText("submit all")
-                if not clicked then
-                    -- fallback: fire remote directly if button not found
-                    CraftService:FireServer("SubmitAllItems", wb, wbId)
+                local action = p.ActionText
+                if action == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
+                elseif action ~= "Select Recipe" and action ~= "Craft" and action ~= "Submit Item" then
+                    CraftService:FireServer("Cancel", wb, wbId)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
                 end
-                task.wait(0.5)
 
-                -- Action 3: Auto Start Crafting
+                if not AutoCraftGearEnabled or not GearRecipeSelected then break end
+
+                CraftService:FireServer("SetRecipe", wb, wbId, GearRecipeSelected)
+                if not waitForAction(p, "Submit Item", 10, gearOn, gearRecipe) then
+                    task.wait(1); continue
+                end
+
+                handler:SubmitAllRequiredItems(wb)
+
+                local elapsed = 0
+                while p.ActionText == "Submit Item" and elapsed < 10 do
+                    task.wait(0.5); elapsed = elapsed + 0.5
+                end
+
+                if not AutoCraftGearEnabled or not GearRecipeSelected then break end
+
                 CraftService:FireServer("Craft", wb, wbId)
-                task.wait(1)
+                if not waitForAction(p, "Skip", 10, gearOn, gearRecipe) then
+                    task.wait(1); continue
+                end
+
+                repeat task.wait(1) until
+                    not AutoCraftGearEnabled
+                    or not GearRecipeSelected
+                    or p.ActionText ~= "Skip"
+
+                if AutoCraftGearEnabled and GearRecipeSelected and p.ActionText == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
+                end
+
+                task.wait(0.1)
             end
         end)
 
@@ -211,40 +256,79 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     local function AutoCraftSeedsLoop()
         if IsCraftingSeeds then return end
 
+        local handler = getCraftingStationHandler()
+        if not handler then
+            notify("Seed Craft Error", "CraftingStationHandler not available on your executor.", 10)
+            return
+        end
+
         local GameEvents = safeWait(ReplicatedStorage, "GameEvents", 15)
         if not GameEvents then
             notify("Seed Craft Error", "GameEvents not found.", 8)
             return
         end
 
-        local CraftService = safeWait(GameEvents, "CraftingGlobalObjectService", 15)
+        local CraftService = GameEvents:FindFirstChild("CraftingGlobalObjectService")
         if not CraftService then
-            notify("Seed Craft Error", "CraftingGlobalObjectService not found.", 10)
+            notify("Seed Craft Error", "CraftingGlobalObjectService not found.", 8)
             return
         end
 
-        local wb   = findWorkbenchAnywhere("SeedEventCraftingWorkBench")
+        local wb, p = findWorkbenchAndPrompt("SeedEventCraftingWorkBench")
+        if not wb or not p then
+            notify("Seed Craft Error", "Seed workbench not found in this server.", 10)
+            return
+        end
+
         local wbId = "SeedEventWorkbench"
+        local function seedOn()     return AutoCraftSeedsEnabled end
+        local function seedRecipe() return SeedRecipeSelected end
 
         IsCraftingSeeds = true
 
         local ok, err = pcall(function()
             while AutoCraftSeedsEnabled and SeedRecipeSelected do
-                -- Action 1: Auto Craft (set the selected recipe)
-                CraftService:FireServer("SetRecipe", wb, wbId, SeedRecipeSelected)
-                task.wait(0.5)
-
-                -- Action 2: Auto Submit All (find "Submit All" button in UI and click it)
-                local clicked = clickButtonByText("submit all")
-                if not clicked then
-                    -- fallback: fire remote directly if button not found
-                    CraftService:FireServer("SubmitAllItems", wb, wbId)
+                local action = p.ActionText
+                if action == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
+                elseif action ~= "Select Recipe" and action ~= "Craft" and action ~= "Submit Item" then
+                    CraftService:FireServer("Cancel", wb, wbId)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
                 end
-                task.wait(0.5)
 
-                -- Action 3: Auto Start Crafting
+                if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
+
+                CraftService:FireServer("SetRecipe", wb, wbId, SeedRecipeSelected)
+                if not waitForAction(p, "Submit Item", 10, seedOn, seedRecipe) then
+                    task.wait(1); continue
+                end
+
+                handler:SubmitAllRequiredItems(wb)
+
+                local elapsed = 0
+                while p.ActionText == "Submit Item" and elapsed < 10 do
+                    task.wait(0.5); elapsed = elapsed + 0.5
+                end
+
+                if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
+
                 CraftService:FireServer("Craft", wb, wbId)
-                task.wait(1)
+                if not waitForAction(p, "Skip", 10, seedOn, seedRecipe) then
+                    task.wait(1); continue
+                end
+
+                repeat task.wait(1) until
+                    not AutoCraftSeedsEnabled
+                    or not SeedRecipeSelected
+                    or p.ActionText ~= "Skip"
+
+                if AutoCraftSeedsEnabled and SeedRecipeSelected and p.ActionText == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
+                end
+
+                task.wait(0.1)
             end
         end)
 
