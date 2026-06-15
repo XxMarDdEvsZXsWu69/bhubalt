@@ -13,7 +13,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     local IsCraftingCampfire       = false
     local CampfireRecipeParagraph  = nil
 
-    -- Ember Burning State
+    -- Ember Burning State (Updated to Auto Hold & Submit Fruits)
     local AutoBurnPlantsEnabled    = false
     local BurnFruitSelected        = nil
     local BurnSpeedDelay           = 1.0
@@ -118,90 +118,101 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         IsCraftingCampfire = false
     end
 
-    -- ===================== BURNING LOOP =====================
+    -- ===================== NEW SUBMIT FRUITS LOOP =====================
     task.spawn(function()
         while true do
+            -- Dynamic pause delay handler based on UI selections
             task.wait(BurnSpeedDelay)
             
             if AutoBurnPlantsEnabled and BurnFruitSelected and BurnFruitSelected ~= "None" then
                 pcall(function()
-                    local character = LocalPlayer.Character
-                    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-                    local backpack = LocalPlayer:FindFirstChildOfClass("Backpack")
+                    local ActivationRemote = safeWaitPath(LocalPlayer, 5, "PlayerScripts", "InputGateway", "Activation")
+                    local GameEvents = safeWait(ReplicatedStorage, "GameEvents", 5)
+                    local SubmitRemote = GameEvents and safeWaitPath(GameEvents, 5, "SummerFire", "Submit")
                     
-                    if character and humanoid and backpack and humanoid.Health > 0 then
-                        local targetTool = nil
-                        for _, obj in ipairs(backpack:GetChildren()) do
-                            if obj:IsA("Tool") and not string.find(string.lower(obj.Name), "seed") then
-                                if obj.Name == BurnFruitSelected or string.find(string.lower(obj.Name), string.lower(BurnFruitSelected)) then
-                                    targetTool = obj; break
-                                end
+                    if not ActivationRemote or not SubmitRemote then
+                        if BurnParagraph then
+                            BurnParagraph:Set({
+                                Title = "Selected Fruit: " .. tostring(BurnFruitSelected),
+                                Content = "Status: Error (Remotes missing!)"
+                            })
+                        end
+                        return
+                    end
+
+                    local character = LocalPlayer.Character
+                    local backpack = LocalPlayer:FindFirstChild("Backpack")
+                    local foundFruit = false
+
+                    if character and backpack then
+                        -- First check if we are already holding the targeted fruit
+                        for _, item in ipairs(character:GetChildren()) do
+                            if item:IsA("Tool") and item.Name == BurnFruitSelected then
+                                foundFruit = true
+                                break
                             end
                         end
-                        
-                        if not targetTool then
-                            for _, obj in ipairs(character:GetChildren()) do
-                                if obj:IsA("Tool") and not string.find(string.lower(obj.Name), "seed") then
-                                    if obj.Name == BurnFruitSelected or string.find(string.lower(obj.Name), string.lower(BurnFruitSelected)) then
-                                        targetTool = obj; break
+
+                        -- If not holding it, look for it in the backpack
+                        if not foundFruit then
+                            for _, item in ipairs(backpack:GetChildren()) do
+                                if item:IsA("Tool") and item.Name == BurnFruitSelected then
+                                    local name = item.Name:lower()
+                                    -- Safety structural exclusions from your prompt logic
+                                    if not name:find("seed") and not name:find("sprinkler") and not name:find("can") and not name:find("crate") and not name:find("tool") and not name:find("pet") and not name:find("egg") and not name:find("ticket") then
+                                        item.Parent = character
+                                        foundFruit = true
+                                        task.wait(0.1) -- Equipment window buffer
+                                        break
                                     end
                                 end
                             end
                         end
 
-                        if not targetTool then
-                            if BurnParagraph then
-                                BurnParagraph:Set({
-                                    Title = "Selected Fruit to Burn: " .. tostring(BurnFruitSelected), 
-                                    Content = "Status: Paused (Waiting for items...)"
-                                })
-                            end
-                            return
-                        end
-
-                        if targetTool then
-                            if BurnParagraph then
-                                BurnParagraph:Set({
-                                    Title = "Selected Fruit to Burn: " .. tostring(BurnFruitSelected), 
-                                    Content = "Status: Burning..."
-                                })
-                            end
-
-                            if targetTool.Parent == backpack then
-                                humanoid:EquipTool(targetTool)
-                                local startTimeout = os.clock()
-                                repeat task.wait(0.02) until targetTool.Parent == character or os.clock() - startTimeout > 1.0
+                        -- Clear hands if the specifically selected fruit is gone/not found
+                        if not foundFruit then
+                            local Humanoid = character:FindFirstChildOfClass("Humanoid")
+                            if Humanoid then
+                                Humanoid:UnequipTools()
                             end
                             
-                            if targetTool.Parent == character then
-                                local promptTriggered = false
-                                for _, desc in ipairs(Workspace:GetDescendants()) do
-                                    if desc:IsA("ProximityPrompt") then
-                                        if desc.ObjectText == "Held Plant" and desc.ActionText == "Burn" then
-                                            desc.RequiresLineOfSight = false
-                                            desc.MaxActivationDistance = math.huge
-                                            desc:InputHoldBegin()
-                                            task.wait(0.02)
-                                            desc:InputHoldEnd()
-                                            promptTriggered = true
-                                            break
-                                        end
-                                    end
-                                end
-                                
-                                if not promptTriggered then
-                                    local GameEvents = safeWait(ReplicatedStorage, "GameEvents", 15)
-                                    local burnRemote = GameEvents and GameEvents:FindFirstChild("SummerCraftingService") and GameEvents.SummerCraftingService:FindFirstChild("BurnItem")
-                                    if burnRemote then burnRemote:FireServer() end
-                                end
+                            if BurnParagraph then
+                                BurnParagraph:Set({
+                                    Title = "Selected Fruit: " .. tostring(BurnFruitSelected), 
+                                    Content = "Status: Paused (Out of chosen item...)"
+                                })
                             end
+                            task.wait(1)
+                            return
+                        end
+                    end
+
+                    -- Fire activation sequence and deliver payload if item is verified in hand
+                    if foundFruit then
+                        if BurnParagraph then
+                            BurnParagraph:Set({
+                                Title = "Selected Fruit: " .. tostring(BurnFruitSelected), 
+                                Content = "Status: Submitting Fruit..."
+                            })
+                        end
+
+                        local fakeCFrame = CFrame.new(-184.319519, 0, 43.1255341, 0.830478072, 0.265547037, -0.489684522, -0, 0.879065394, 0.47670123, 0.557051301, -0.395889908, 0.730044544)
+                        ActivationRemote:FireServer(true, fakeCFrame)
+                        task.wait(0.1)
+
+                        SubmitRemote:FireServer()
+                        -- Additional throttle window compensation logic based on global delay selections
+                        if BurnSpeedDelay == 1.0 then
+                            task.wait(0.4)
+                        else
+                            task.wait(0.1)
                         end
                     end
                 end)
             else
                 if BurnParagraph then
                     BurnParagraph:Set({
-                        Title = "Selected Fruit to Burn: " .. tostring(BurnFruitSelected or "None"), 
+                        Title = "Selected Fruit: " .. tostring(BurnFruitSelected or "None"), 
                         Content = "Status: Idle / Off"
                     })
                 end
@@ -269,31 +280,21 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     CampfireTab:CreateSection("Ember Burning")
 
     BurnParagraph = CampfireTab:CreateParagraph({
-        Title = "Selected Fruit to Burn: None", 
+        Title = "Selected Fruit: None", 
         Content = "Status: Idle / Off"
     })
 
-
-    CampfireTab:CreateDropdown({
-        Name    = "Select Fruit to Burn",
-        Options = fruitDropdownPool,
-        CurrentOption   = {},
-        MultipleOptions = false,
-        UseAutoComplete = true,
-        Flag            = "eventSelectFruitToBurn",
-        Callback        = function(Option)
-            local choice = typeof(Option) == "table" and Option[1] or Option
-            if choice and choice ~= "" then
-                BurnFruitSelected = choice
-                if BurnParagraph then
-                    BurnParagraph:Set({Title = "Selected Fruit to Burn: " .. choice, Content = "Status: Initializing..."})
-                end
-            end
+    CampfireTab:CreateToggle({
+        Name         = "Auto Hold & Submit Fruits",
+        CurrentValue = false,
+        Flag         = "eventAutoBurnPlants",
+        Callback     = function(Value)
+            AutoBurnPlantsEnabled = Value
         end,
     })
 
     CampfireTab:CreateDropdown({
-        Name    = "Burn Process Speed",
+        Name    = "Submit Process Speed",
         Options = {"Slow (1.0s Delay)", "Fast (0.5s Delay)"},
         CurrentOption   = {"Slow (1.0s Delay)"},
         MultipleOptions = false,
@@ -308,12 +309,21 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end,
     })
 
-    CampfireTab:CreateToggle({
-        Name         = "Auto Hold & Burn Plants",
-        CurrentValue = false,
-        Flag         = "eventAutoBurnPlants",
-        Callback     = function(Value)
-            AutoBurnPlantsEnabled = Value
+    CampfireTab:CreateDropdown({
+        Name    = "Select Fruit to Submit",
+        Options = fruitDropdownPool,
+        CurrentOption   = {},
+        MultipleOptions = false,
+        UseAutoComplete = true,
+        Flag            = "eventSelectFruitToBurn",
+        Callback        = function(Option)
+            local choice = typeof(Option) == "table" and Option[1] or Option
+            if choice and choice ~= "" then
+                BurnFruitSelected = choice
+                if BurnParagraph then
+                    BurnParagraph:Set({Title = "Selected Fruit: " .. choice, Content = "Status: Initializing..."})
+                end
+            end
         end,
     })
 
