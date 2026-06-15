@@ -2,6 +2,8 @@ local M = {}
 
 function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, beastHubIcon)
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local TeleportService  = game:GetService("TeleportService")
+    local RunService       = game:GetService("RunService")
     local Players          = game:GetService("Players")
     local LocalPlayer      = Players.LocalPlayer
     local PlayerGui        = LocalPlayer.PlayerGui
@@ -13,19 +15,15 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     local SeedRecipeSelected       = nil
     local IsCraftingGear           = false
     local IsCraftingSeeds          = false
-    
-    local AutoCraftCampfireEnabled = false
-    local CampfireRecipeSelected   = nil
-    local IsCraftingCampfire       = false
+    local GearRecipeParagraph      = nil
+    local SeedRecipeParagraph      = nil
 
-    local AutoBurnPlantsEnabled    = false
-    local BurnFruitSelected        = nil
-    local BurnSpeedDelay           = 1.0
-
-    -- ===================== HELPERS =====================
+    -- ===================== SAFE WAIT-FOR =====================
     local function safeWait(parent, name, timeout)
         if not parent then return nil end
-        local ok, result = pcall(function() return parent:WaitForChild(name, timeout or 10) end)
+        local ok, result = pcall(function()
+            return parent:WaitForChild(name, timeout or 10)
+        end)
         return ok and result or nil
     end
 
@@ -38,130 +36,439 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         return cur
     end
 
+    -- ===================== SERVICES =====================
+    local function getGameEvents()
+        return safeWait(ReplicatedStorage, "GameEvents", 15)
+    end
+
+    local function getCraftingStationHandler()
+        local ok, handler = pcall(function()
+            return require(ReplicatedStorage.Modules.CraftingStationHandler)
+        end)
+        return ok and handler or nil
+    end
+
+    -- ===================== HELPERS =====================
     local function notify(title, content, duration)
         Rayfield:Notify({
-            Title = title,
-            Content = content,
+            Title    = title,
+            Content  = content,
             Duration = duration or 6,
-            Image = beastHubIcon,
+            Image    = beastHubIcon,
         })
     end
 
-    -- ===================== CRAFT LOOPS (FIXED) =====================
-
-    -- NEW: Unified Remote-Only Crafting Logic for Gear/Seeds
-    local function UnifiedGlobalCraftLoop(mode)
-        local isGear = (mode == "Gear")
-        if isGear and IsCraftingGear then return end
-        if not isGear and IsCraftingSeeds then return end
-
-        local GameEvents = safeWait(ReplicatedStorage, "GameEvents", 15)
-        local CraftService = GameEvents and GameEvents:FindFirstChild("CraftingGlobalObjectService")
-        
-        if not CraftService then
-            notify(mode .. " Craft Error", "Crafting service not found. Are you in the tutorial?", 10)
-            return
+    local function SwapToLoadout(LoadoutNum)
+        local ButtonHolder = safeWaitPath(PlayerGui,
+            5, "ActivePetUI", "Frame", "Main", "PetLoadout", "Main", "ButtonHolder")
+        if not ButtonHolder then return end
+        local LoadoutSlot = ButtonHolder:FindFirstChild("PET_LOADOUT_" .. LoadoutNum)
+        if LoadoutSlot and LoadoutSlot.BackgroundColor3 ~= Color3.fromRGB(36, 227, 36) then
+            local GameEvents = getGameEvents()
+            if not GameEvents then return end
+            local attempts = 0
+            repeat
+                attempts = attempts + 1
+                if attempts > 10 then break end
+                GameEvents.PetsService:FireServer("SwapPetLoadout", tonumber(LoadoutNum))
+                task.wait(5)
+                LoadoutSlot = ButtonHolder:FindFirstChild("PET_LOADOUT_" .. LoadoutNum)
+            until not LoadoutSlot or LoadoutSlot.BackgroundColor3 == Color3.fromRGB(36, 227, 36)
         end
-
-        if isGear then IsCraftingGear = true else IsCraftingSeeds = true end
-
-        pcall(function()
-            -- Mode Config
-            local wbId = isGear and "GearEventWorkbench" or "SeedEventWorkbench"
-            local getEnabled = function() return isGear and AutoCraftGearEnabled or AutoCraftSeedsEnabled end
-            local getRecipe = function() return isGear and GearRecipeSelected or SeedRecipeSelected end
-
-            while getEnabled() and getRecipe() do
-                -- 1. Claim any finished items first
-                CraftService:FireServer("Claim", nil, wbId, 1)
-                task.wait(0.5)
-
-                -- 2. Set the Recipe
-                CraftService:FireServer("SetRecipe", nil, wbId, getRecipe())
-                task.wait(0.5)
-
-                -- 3. Use the global object service to "Submit All" 
-                -- We use the Remote directly instead of the proximity prompt handler
-                CraftService:FireServer("SubmitAll", nil, wbId)
-                task.wait(0.5)
-
-                -- 4. Start the Craft
-                CraftService:FireServer("Craft", nil, wbId)
-                
-                -- Wait for craft time (typical for these workbenches)
-                -- We check every 2 seconds to see if we can claim/restart
-                task.wait(2)
-            end
-        end)
-
-        if isGear then IsCraftingGear = false else IsCraftingSeeds = false end
     end
 
-    -- ---- Campfire Loop (Kept Original) ----
-    local function AutoCraftCampfireLoop()
-        if IsCraftingCampfire then return end
-        local GameEvents = safeWait(ReplicatedStorage, "GameEvents", 15)
-        local SummerCraftingService = GameEvents and GameEvents:FindFirstChild("SummerCraftingService")
-        local CampfireRoot = safeWaitPath(PlayerGui, 10, "SummerCrafting", "Crafting", "Main", "Campfire", "Crafting")
+    -- ===================== FARM HELPERS =====================
+    local function getMyFarmImportant()
+        local Farms = workspace:FindFirstChild("Farm")
+        if not Farms then return nil end
+        for _, Farm in pairs(Farms:GetChildren()) do
+            local Important = Farm:FindFirstChild("Important")
+            local Owner = Important
+                and Important:FindFirstChild("Data")
+                and Important.Data:FindFirstChild("Owner")
+            if Owner and Owner.Value == LocalPlayer.Name then
+                return Important
+            end
+        end
+        return nil
+    end
 
-        if not SummerCraftingService or not CampfireRoot then
-            notify("Campfire Error", "Open Campfire Menu & ensure Service exists.", 5)
+    local hiddenPlants    = nil
+    local hiddenCosmetics = nil
+
+    local function SetPlantVisibility(hide)
+        local imp = getMyFarmImportant()
+        if not imp then return end
+        local plants = imp:FindFirstChild("Plants_Physical")
+            or (hiddenPlants and hiddenPlants.Parent == nil and hiddenPlants)
+        if not plants then return end
+        if hide then
+            hiddenPlants = plants
+            plants.Parent = nil
+        else
+            if hiddenPlants then
+                hiddenPlants.Parent = imp
+                hiddenPlants = nil
+            end
+        end
+    end
+
+    local function SetCosmeticVisibility(hide)
+        local imp = getMyFarmImportant()
+        if not imp then return end
+        local cos = imp:FindFirstChild("Cosmetic_Physical")
+            or (hiddenCosmetics and hiddenCosmetics.Parent == nil and hiddenCosmetics)
+        if not cos then return end
+        if hide then
+            hiddenCosmetics = cos
+            cos.Parent = nil
+        else
+            if hiddenCosmetics then
+                hiddenCosmetics.Parent = imp
+                hiddenCosmetics = nil
+            end
+        end
+    end
+
+    -- ===================== CRAFT HELPERS =====================
+    local function waitForAction(prompt, expected, timeout, enabledRef, recipeRef)
+        local elapsed = 0
+        while prompt.ActionText ~= expected do
+            if elapsed >= timeout then return false end
+            if not enabledRef() or not recipeRef() then return false end
+            task.wait(0.5)
+            elapsed = elapsed + 0.5
+        end
+        return true
+    end
+
+    -- ===================== CRAFT LOOPS =====================
+
+    -- ---- Gear Loop ----
+    local function AutoCraftGearLoop()
+        if IsCraftingGear then return end
+
+        local handler = getCraftingStationHandler()
+        if not handler then
+            notify("Gear Craft Error", "Auto-Craft Gear is not supported on your executor.", 10)
             return
         end
 
-        IsCraftingCampfire = true
-        pcall(function()
-            while AutoCraftCampfireEnabled and CampfireRecipeSelected do
-                local HasOpenSlot = false
-                for i = 1, 3 do
-                    local SlotUI = CampfireRoot:FindFirstChild("Craft" .. i)
-                    if SlotUI then
-                        local TimeLeft = SlotUI:FindFirstChild("TimeLeft")
-                        if TimeLeft and TimeLeft.Visible and TimeLeft.Text == "CLAIM!" then
-                            SummerCraftingService.ClaimCraft:FireServer(i)
-                            task.wait(0.3)
+        local function findGearWorkbench()
+            local CraftingTables = workspace:FindFirstChild("CraftingTables")
+            if not CraftingTables then return nil, nil end
+            local wb = CraftingTables:FindFirstChild("EventCraftingWorkBench")
+            if not wb then return nil, nil end
+            local prompt = nil
+            for _, Model in ipairs(wb:GetChildren()) do
+                if Model.Name == "Model" then
+                    for _, Part in ipairs(Model:GetChildren()) do
+                        if #Part:GetChildren() > 0 then
+                            local p = Part:FindFirstChild("CraftingProximityPrompt")
+                            if p then prompt = p; break end
                         end
-                        if TimeLeft and not TimeLeft.Visible then HasOpenSlot = true end
                     end
                 end
-                if HasOpenSlot then
-                    SummerCraftingService.StartCraft:FireServer(CampfireRecipeSelected)
-                    task.wait(0.8)
-                else
-                    task.wait(2)
+                if prompt then break end
+            end
+            return wb, prompt
+        end
+
+        local EventCraftingWorkBench, GearCraftingProximityPrompt = findGearWorkbench()
+        if not EventCraftingWorkBench or not GearCraftingProximityPrompt then
+            notify("Gear Craft Error", "You cannot craft items in tutorial servers.", 10)
+            return
+        end
+
+        IsCraftingGear = true
+
+        local ok, err = pcall(function()
+            local GameEvents = getGameEvents()
+            if not GameEvents then
+                notify("Gear Craft Error", "GameEvents not found.", 8)
+                return
+            end
+            local CraftService = GameEvents:FindFirstChild("CraftingGlobalObjectService")
+            if not CraftService then
+                notify("Gear Craft Error", "CraftingGlobalObjectService not found.", 8)
+                return
+            end
+
+            local p    = GearCraftingProximityPrompt
+            local wb   = EventCraftingWorkBench
+            local wbId = "GearEventWorkbench"
+            local function gearOn()    return AutoCraftGearEnabled end
+            local function gearRecipe() return GearRecipeSelected end
+
+            while AutoCraftGearEnabled and GearRecipeSelected do
+                local action = p.ActionText
+                if action == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
+                elseif action ~= "Select Recipe" and action ~= "Craft" and action ~= "Submit Item" then
+                    CraftService:FireServer("Cancel", wb, wbId)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
                 end
+
+                if not AutoCraftGearEnabled or not GearRecipeSelected then break end
+
+                CraftService:FireServer("SetRecipe", wb, wbId, GearRecipeSelected)
+                if not waitForAction(p, "Submit Item", 10, gearOn, gearRecipe) then
+                    task.wait(1); continue
+                end
+
+                handler:SubmitAllRequiredItems(wb)
+
+                local elapsed = 0
+                while p.ActionText == "Submit Item" and elapsed < 10 do
+                    task.wait(0.5); elapsed = elapsed + 0.5
+                end
+
+                if not AutoCraftGearEnabled or not GearRecipeSelected then break end
+
+                CraftService:FireServer("Craft", wb, wbId)
+                if not waitForAction(p, "Skip", 10, gearOn, gearRecipe) then
+                    task.wait(1); continue
+                end
+
+                repeat task.wait(1) until
+                    not AutoCraftGearEnabled
+                    or not GearRecipeSelected
+                    or p.ActionText ~= "Skip"
+
+                if AutoCraftGearEnabled and GearRecipeSelected and p.ActionText == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, gearOn, gearRecipe)
+                end
+
+                task.wait(0.1)
             end
         end)
-        IsCraftingCampfire = false
+
+        IsCraftingGear = false
+        if not ok then
+            warn("[BeastHub] AutoCraftGearLoop error: " .. tostring(err))
+            notify("Gear Craft Error", tostring(err):sub(1, 90), 8)
+        end
     end
 
-    -- ===================== UI SETUP (ABRIDGED) =====================
-    -- I've kept your UI structure exactly the same, just updated the callbacks 
-    -- to point to the new UnifiedGlobalCraftLoop logic.
+    -- ---- Seeds Loop ----
+    local function AutoCraftSeedsLoop()
+        if IsCraftingSeeds then return end
 
-    local CraftTab = Window:CreateTab("Craft", "hammer")
-    
-    -- Gear Section
-    CraftTab:CreateToggle({
-        Name = "Auto-Craft Gear",
+        local handler = getCraftingStationHandler()
+        if not handler then
+            notify("Seed Craft Error", "Auto-Craft Seeds is not supported on your executor.", 10)
+            return
+        end
+
+        local function findSeedWorkbench()
+            local CraftingTables = workspace:FindFirstChild("CraftingTables")
+            if not CraftingTables then return nil, nil end
+            local wb = CraftingTables:FindFirstChild("SeedEventCraftingWorkBench")
+            if not wb then return nil, nil end
+            local prompt = nil
+            for _, Model in ipairs(wb:GetChildren()) do
+                if Model.Name == "Model" then
+                    for _, Part in ipairs(Model:GetChildren()) do
+                        if #Part:GetChildren() > 0 then
+                            local p = Part:FindFirstChild("CraftingProximityPrompt")
+                            if p then prompt = p; break end
+                        end
+                    end
+                end
+                if prompt then break end
+            end
+            return wb, prompt
+        end
+
+        local SeedCraftingWorkBench, SeedCraftingProximityPrompt = findSeedWorkbench()
+        if not SeedCraftingWorkBench or not SeedCraftingProximityPrompt then
+            notify("Seed Craft Error", "You cannot craft items in tutorial servers.", 10)
+            return
+        end
+
+        IsCraftingSeeds = true
+
+        local ok, err = pcall(function()
+            local GameEvents = getGameEvents()
+            if not GameEvents then
+                notify("Seed Craft Error", "GameEvents not found.", 8)
+                return
+            end
+            local CraftService = GameEvents:FindFirstChild("CraftingGlobalObjectService")
+            if not CraftService then
+                notify("Seed Craft Error", "CraftingGlobalObjectService not found.", 8)
+                return
+            end
+
+            local p    = SeedCraftingProximityPrompt
+            local wb   = SeedCraftingWorkBench
+            local wbId = "SeedEventWorkbench"
+            local function seedOn()     return AutoCraftSeedsEnabled end
+            local function seedRecipe() return SeedRecipeSelected end
+
+            while AutoCraftSeedsEnabled and SeedRecipeSelected do
+                local action = p.ActionText
+                if action == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
+                elseif action ~= "Select Recipe" and action ~= "Craft" and action ~= "Submit Item" then
+                    CraftService:FireServer("Cancel", wb, wbId)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
+                end
+
+                if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
+
+                CraftService:FireServer("SetRecipe", wb, wbId, SeedRecipeSelected)
+                if not waitForAction(p, "Submit Item", 10, seedOn, seedRecipe) then
+                    task.wait(1); continue
+                end
+
+                handler:SubmitAllRequiredItems(wb)
+
+                local elapsed = 0
+                while p.ActionText == "Submit Item" and elapsed < 10 do
+                    task.wait(0.5); elapsed = elapsed + 0.5
+                end
+
+                if not AutoCraftSeedsEnabled or not SeedRecipeSelected then break end
+
+                CraftService:FireServer("Craft", wb, wbId)
+                if not waitForAction(p, "Skip", 10, seedOn, seedRecipe) then
+                    task.wait(1); continue
+                end
+
+                repeat task.wait(1) until
+                    not AutoCraftSeedsEnabled
+                    or not SeedRecipeSelected
+                    or p.ActionText ~= "Skip"
+
+                if AutoCraftSeedsEnabled and SeedRecipeSelected and p.ActionText == "Claim" then
+                    CraftService:FireServer("Claim", wb, wbId, 1)
+                    waitForAction(p, "Select Recipe", 10, seedOn, seedRecipe)
+                end
+
+                task.wait(0.1)
+            end
+        end)
+
+        IsCraftingSeeds = false
+        if not ok then
+            warn("[BeastHub] AutoCraftSeedsLoop error: " .. tostring(err))
+            notify("Seed Craft Error", tostring(err):sub(1, 90), 8)
+        end
+    end
+
+    -- ===================== TAB UI =====================
+    local Event = Window:CreateTab("Craft", "hammer")
+
+    -- ---- Gear Crafting ----
+    Event:CreateSection("Gear Crafting")
+
+    GearRecipeParagraph = Event:CreateParagraph({
+        Title   = "Selected Gear Recipe:",
+        Content = "None",
+    })
+
+    Event:CreateToggle({
+        Name         = "Auto-Craft Gear",
         CurrentValue = false,
-        Callback = function(Value)
+        Flag         = "eventAutoCraftGear",
+        Callback     = function(Value)
             AutoCraftGearEnabled = Value
-            if Value then task.spawn(function() UnifiedGlobalCraftLoop("Gear") end) end
+            if Value and GearRecipeSelected then
+                task.spawn(AutoCraftGearLoop)
+            end
         end,
     })
 
-    -- Seed Section
-    CraftTab:CreateToggle({
-        Name = "Auto-Craft Seeds",
+    Event:CreateDropdown({
+        Name    = "Gear Recipe",
+        Options = {
+            "Lightning Rod", "Tanning Mirror", "Reclaimer", "Event Lantern",
+            "Anti Bee Egg", "Small Toy", "Small Treat", "Pet Pouch", "Pack Bee",
+            "Silver Ingot", "Gold Ingot", "Chimera Stone", "Black Spotty Egg",
+            "Tropical Mist Sprinkler", "Berry Blusher Sprinkler", "Spice Spritzer Sprinkler",
+            "Flower Froster Sprinkler", "Stalk Sprout Sprinkler", "Sweet Soaker Sprinkler",
+            "Mutation Spray Pollinated", "Honey Crafters Crate", "Mutation Spray Glimmering",
+            "Mutation Spray Chilled", "Mutation Spray Shocked", "Mutation Spray Choc",
+        },
+        CurrentOption  = {},
+        MultipleOptions = false,
+        Flag           = "eventGearRecipe",
+        Callback       = function(Option)
+            local choice = typeof(Option) == "table" and Option[1] or Option
+            GearRecipeSelected = (choice and choice ~= "") and choice or nil
+            
+            local listText = GearRecipeSelected or "None"
+            if GearRecipeParagraph then
+                GearRecipeParagraph:Set({
+                    Title = "Selected Gear Recipe:",
+                    Content = listText
+                })
+            end
+
+            if AutoCraftGearEnabled and GearRecipeSelected then
+                task.spawn(AutoCraftGearLoop)
+            end
+        end,
+    })
+    
+    Event:CreateDivider()
+
+    -- ---- Seed Crafting ----
+    Event:CreateSection("Seed Crafting")
+
+    SeedRecipeParagraph = Event:CreateParagraph({
+        Title   = "Selected Seed Recipe:",
+        Content = "None",
+    })
+
+    Event:CreateToggle({
+        Name         = "Auto-Craft Seeds",
         CurrentValue = false,
-        Callback = function(Value)
+        Flag         = "eventAutoCraftSeeds",
+        Callback     = function(Value)
             AutoCraftSeedsEnabled = Value
-            if Value then task.spawn(function() UnifiedGlobalCraftLoop("Seed") end) end
+            if Value and SeedRecipeSelected then
+                task.spawn(AutoCraftSeedsLoop)
+            end
         end,
     })
 
-    -- ... [Rest of your Dropdowns and Campfire UI remain unchanged] ...
+    Event:CreateDropdown({
+        Name    = "Seed Recipe",
+        Options = {
+            "Egg Melon", "Mandrake", "Evo Apple I", "Evo Apple II", "Evo Apple III",
+            "Evo Apple IV", "Olive", "Hollow Bamboo", "Yarrow", "Grand Volcania",
+            "Peace Lily", "Aloe Vera", "Guanabana", "Crafters Seed Pack",
+            "Manuka Flower", "Dandelion", "Lumira", "Honeysuckle", "Bee Balm",
+            "Nectar Thorn", "Suncoil", "Twisted Tangle", "Veinpetal",
+            "Horsetail", "Lingonberry", "Amber Spine",
+        },
+        CurrentOption  = {},
+        MultipleOptions = false,
+        Flag           = "eventSeedRecipe",
+        Callback       = function(Option)
+            local choice = typeof(Option) == "table" and Option[1] or Option
+            SeedRecipeSelected = (choice and choice ~= "") and choice or nil
+            
+            local listText = SeedRecipeSelected or "None"
+            if SeedRecipeParagraph then
+                SeedRecipeParagraph:Set({
+                    Title = "Selected Seed Recipe:",
+                    Content = listText
+                })
+            end
+
+            if AutoCraftSeedsEnabled and SeedRecipeSelected then
+                task.spawn(AutoCraftSeedsLoop)
+            end
+        end,
+    })
+
+    Event:CreateDivider()
 end
 
 return M
