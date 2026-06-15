@@ -636,7 +636,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     -- Campfire Crafting
     CraftTab:CreateSection("Campfire Crafting")
 
-    CampfireRecipeParagraph = CraftTab:CreateParagraph({
+    CraftRecipeParagraph = CraftTab:CreateParagraph({
         Title   = "Selected Campfire Recipe:",
         Content = "None",
     })
@@ -686,7 +686,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     -- Ember Burning
     CraftTab:CreateSection("Ember Burning")
 
-    BurnParagraph = CampfireTab:CreateParagraph({
+    BurnParagraph = CraftTab:CreateParagraph({
         Title   = "Selected Fruit: None",
         Content = "Status: Idle / Off"
     })
