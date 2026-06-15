@@ -155,9 +155,9 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end
 
         local function findGearWorkbench()
-            local CraftingTables = safeWait(workspace, "CraftingTables", 15)
+            local CraftingTables = workspace:FindFirstChild("CraftingTables")
             if not CraftingTables then return nil, nil end
-            local wb = safeWait(CraftingTables, "EventCraftingWorkBench", 15)
+            local wb = CraftingTables:FindFirstChild("EventCraftingWorkBench")
             if not wb then return nil, nil end
             local prompt = nil
             for _, Model in ipairs(wb:GetChildren()) do
@@ -176,7 +176,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
         local EventCraftingWorkBench, GearCraftingProximityPrompt = findGearWorkbench()
         if not EventCraftingWorkBench or not GearCraftingProximityPrompt then
-            notify("Gear Craft Error", "Gear workbench not found. Make sure you are in a non-tutorial server and the Crafting area is loaded.", 10)
+            notify("Gear Craft Error", "You cannot craft items in tutorial servers.", 10)
             return
         end
 
@@ -263,9 +263,9 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end
 
         local function findSeedWorkbench()
-            local CraftingTables = safeWait(workspace, "CraftingTables", 15)
+            local CraftingTables = workspace:FindFirstChild("CraftingTables")
             if not CraftingTables then return nil, nil end
-            local wb = safeWait(CraftingTables, "SeedEventCraftingWorkBench", 15)
+            local wb = CraftingTables:FindFirstChild("SeedEventCraftingWorkBench")
             if not wb then return nil, nil end
             local prompt = nil
             for _, Model in ipairs(wb:GetChildren()) do
@@ -284,7 +284,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
         local SeedCraftingWorkBench, SeedCraftingProximityPrompt = findSeedWorkbench()
         if not SeedCraftingWorkBench or not SeedCraftingProximityPrompt then
-            notify("Seed Craft Error", "Seed workbench not found. Make sure you are in a non-tutorial server and the Crafting area is loaded.", 10)
+            notify("Seed Craft Error", "You cannot craft items in tutorial servers.", 10)
             return
         end
 
