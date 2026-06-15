@@ -67,9 +67,23 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     -- Recursive workspace search for a workbench by name
     local function findWorkbenchAnywhere(wbName)
         local wb = workspace:FindFirstChild(wbName, true)
-        if not wb then return nil, nil end
-        local prompt = wb:FindFirstChild("CraftingProximityPrompt", true)
-        return wb, prompt
+        if not wb then return nil end
+        return wb
+    end
+
+    -- Find and click a UI button anywhere in PlayerGui by partial text match
+    local function clickButtonByText(searchText)
+        local lowerSearch = searchText:lower()
+        for _, v in ipairs(PlayerGui:GetDescendants()) do
+            if (v:IsA("TextButton") or v:IsA("ImageButton")) then
+                local btnText = (v:IsA("TextButton") and v.Text or ""):lower()
+                if string.find(btnText, lowerSearch) and v.Visible then
+                    v.MouseButton1Click:Fire()
+                    return true
+                end
+            end
+        end
+        return false
     end
 
     -- ===================== FARM HELPERS =====================
@@ -168,12 +182,19 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
         local ok, err = pcall(function()
             while AutoCraftGearEnabled and GearRecipeSelected do
+                -- Action 1: Auto Craft (set the selected recipe)
                 CraftService:FireServer("SetRecipe", wb, wbId, GearRecipeSelected)
                 task.wait(0.5)
 
-                CraftService:FireServer("SubmitAllItems", wb, wbId)
+                -- Action 2: Auto Submit All (find "Submit All" button in UI and click it)
+                local clicked = clickButtonByText("submit all")
+                if not clicked then
+                    -- fallback: fire remote directly if button not found
+                    CraftService:FireServer("SubmitAllItems", wb, wbId)
+                end
                 task.wait(0.5)
 
+                -- Action 3: Auto Start Crafting
                 CraftService:FireServer("Craft", wb, wbId)
                 task.wait(1)
             end
@@ -202,19 +223,26 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             return
         end
 
-        local wb  = findWorkbenchAnywhere("SeedEventCraftingWorkBench")
+        local wb   = findWorkbenchAnywhere("SeedEventCraftingWorkBench")
         local wbId = "SeedEventWorkbench"
 
         IsCraftingSeeds = true
 
         local ok, err = pcall(function()
             while AutoCraftSeedsEnabled and SeedRecipeSelected do
+                -- Action 1: Auto Craft (set the selected recipe)
                 CraftService:FireServer("SetRecipe", wb, wbId, SeedRecipeSelected)
                 task.wait(0.5)
 
-                CraftService:FireServer("SubmitAllItems", wb, wbId)
+                -- Action 2: Auto Submit All (find "Submit All" button in UI and click it)
+                local clicked = clickButtonByText("submit all")
+                if not clicked then
+                    -- fallback: fire remote directly if button not found
+                    CraftService:FireServer("SubmitAllItems", wb, wbId)
+                end
                 task.wait(0.5)
 
+                -- Action 3: Auto Start Crafting
                 CraftService:FireServer("Craft", wb, wbId)
                 task.wait(1)
             end
