@@ -613,7 +613,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     CraftTab:CreateDivider()
 
     -- ---- Craft Tab ----
-    local CraftTab = Window:CreateTab("Campfire", "flame")
+    --local CraftTab = Window:CreateTab("Campfire", "flame")
 
     -- Campfire Crafting
     CraftTab:CreateSection("Campfire Crafting")
