@@ -613,17 +613,17 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     CraftTab:CreateDivider()
 
     -- ---- Campfire Tab ----
-    local CampfireTab = Window:CreateTab("Campfire", "flame")
+   -- local CampfireTab = Window:CreateTab("Campfire", "flame")
 
     -- Campfire Crafting
-    CampfireTab:CreateSection("Campfire Crafting")
+    CraftTab:CreateSection("Campfire Crafting")
 
-    CampfireRecipeParagraph = CampfireTab:CreateParagraph({
+    CampfireRecipeParagraph = CraftTab:CreateParagraph({
         Title   = "Selected Campfire Recipe:",
         Content = "None",
     })
 
-    CampfireTab:CreateToggle({
+    CraftTab:CreateToggle({
         Name         = "Auto-Craft Campfire",
         CurrentValue = false,
         Flag         = "eventAutoCraftCampfire",
@@ -635,7 +635,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end,
     })
 
-    CampfireTab:CreateDropdown({
+    CraftTab:CreateDropdown({
         Name    = "Campfire Recipe",
         Options = {
             "1:1:Firepit Flower", "1:2:Cauliflower", "2:1:Campfire Crate",
@@ -663,17 +663,17 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end,
     })
 
-    CampfireTab:CreateDivider()
+    CraftTab:CreateDivider()
 
     -- Ember Burning
-    CampfireTab:CreateSection("Ember Burning")
+    CraftTab:CreateSection("Ember Burning")
 
-    BurnParagraph = CampfireTab:CreateParagraph({
+    BurnParagraph = CraftTab:CreateParagraph({
         Title   = "Selected Fruit: None",
         Content = "Status: Idle / Off"
     })
 
-    CampfireTab:CreateToggle({
+    CraftTab:CreateToggle({
         Name         = "Auto Hold & Submit Fruits",
         CurrentValue = false,
         Flag         = "eventAutoBurnPlants",
@@ -682,7 +682,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end,
     })
 
-    CampfireTab:CreateDropdown({
+    CraftTab:CreateDropdown({
         Name            = "Submit Process Speed",
         Options         = {"Slow (1.0s Delay)", "Fast (0.5s Delay)"},
         CurrentOption   = {"Slow (1.0s Delay)"},
@@ -698,7 +698,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end,
     })
 
-    CampfireTab:CreateDropdown({
+    CraftTab:CreateDropdown({
         Name            = "Select Fruit to Submit",
         Options         = fruitDropdownPool,
         CurrentOption   = {},
@@ -719,7 +719,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end,
     })
 
-    CampfireTab:CreateDivider()
+    CraftTab:CreateDivider()
 end
 
 return M
