@@ -508,8 +508,8 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
     -- ===================== TAB UI =====================
 
-    -- ---- Craft Tab (Gear + Seeds) ----
-    local CraftTab = Window:CreateTab("Craft", "hammer")
+    -- ---- Crafting Tab (Gear + Seeds + Campfire) ----
+    local CraftTab = Window:CreateTab("Crafting", "hammer")
 
     -- Gear Crafting
     CraftTab:CreateSection("Gear Crafting")
@@ -611,9 +611,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     })
 
     CraftTab:CreateDivider()
-
-    -- ---- Craft Tab ----
-    --local CraftTab = Window:CreateTab("Campfire", "flame")
 
     -- Campfire Crafting
     CraftTab:CreateSection("Campfire Crafting")
