@@ -2,22 +2,14 @@ local M = {}
 
 function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, beastHubIcon)
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local Players          = game:GetService("Players")
-    local Workspace        = game:GetService("Workspace")
-    local LocalPlayer      = Players.LocalPlayer
-    local PlayerGui        = LocalPlayer.PlayerGui
+    local Players           = game:GetService("Players")
+    local LocalPlayer       = Players.LocalPlayer
 
     -- ===================== STATE =====================
-    local AutoCraftCampfireEnabled = false
-    local CampfireRecipeSelected   = nil -- Default to nil/none
-    local IsCraftingCampfire       = false
-    local CampfireRecipeParagraph  = nil
-
-    -- Ember Burning State (Updated to Auto Hold & Submit Fruits)
-    local AutoBurnPlantsEnabled    = false
-    local BurnFruitSelected        = nil
-    local BurnSpeedDelay           = 1.0
-    local BurnParagraph            = nil
+    local AutoSubmitPlantsEnabled  = false
+    local HarvestPlantSelected     = nil
+    local SubmitSpeedDelay         = 1.0
+    local HarvestParagraph         = nil
 
     -- ===================== SAFE WAIT-FOR =====================
     local function safeWait(parent, name, timeout)
@@ -37,20 +29,11 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         return cur
     end
 
-    -- ===================== HELPERS =====================
-    local function notify(title, content, duration)
-        Rayfield:Notify({
-            Title    = title,
-            Content  = content,
-            Duration = duration or 6,
-            Image    = beastHubIcon,
-        })
-    end
-
-    -- Dynamic Dropdown Scraper for Fruits Pool
+    -- Dynamic Dropdown Scraper for Plants Pool
     local function getAllSeedsTableV2()
         local success, result = pcall(function()
-            local PlantDataModule = safeWaitPath(ReplicatedStorage, 5, "Modules", "GardenGuideModules", "DataModules", "PlantData")
+            local PlantDataModule = safeWaitPath(ReplicatedStorage, 5,
+                "Modules", "GardenGuideModules", "DataModules", "PlantData")
             if PlantDataModule then
                 return require(PlantDataModule).Data
             end
@@ -58,128 +41,71 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         return success and result or {}
     end
 
-    local fruitDropdownPool = {}
-    for fruitName, _ in pairs(getAllSeedsTableV2()) do
-        table.insert(fruitDropdownPool, tostring(fruitName))
+    local plantDropdownPool = {}
+    for plantName, _ in pairs(getAllSeedsTableV2()) do
+        table.insert(plantDropdownPool, tostring(plantName))
     end
-    table.sort(fruitDropdownPool)
+    table.sort(plantDropdownPool)
 
-    -- ===================== CRAFT LOOPS =====================
-    local function AutoCraftCampfireLoop()
-        if IsCraftingCampfire then return end
-        IsCraftingCampfire = true
-
-        local ok, err = pcall(function()
-            local GameEvents = safeWait(ReplicatedStorage, "GameEvents", 15)
-            if not GameEvents then return end
-            
-            local SummerCraftingService = safeWait(GameEvents, "SummerCraftingService", 10)
-            if not SummerCraftingService then return end
-
-            local CampfireRoot = safeWaitPath(PlayerGui, 10,
-                "SummerCrafting", "Crafting", "Main", "Campfire", "Crafting")
-            
-            if not CampfireRoot then
-                notify("Campfire Error", "Please open the Campfire menu.", 5)
-                return
-            end
-
-            while AutoCraftCampfireEnabled and CampfireRecipeSelected do
-                local HasOpenSlot = false
-                local HasClaim    = false
-
-                for i = 1, 3 do
-                    local SlotUI = CampfireRoot:FindFirstChild("Craft" .. i)
-                    if SlotUI then
-                        local TimeLeft = SlotUI:FindFirstChild("TimeLeft")
-                        if TimeLeft then
-                            if TimeLeft.Visible and TimeLeft.Text == "CLAIM!" then
-                                HasClaim = true
-                                SummerCraftingService.ClaimCraft:FireServer(i)
-                                task.wait(0.3)
-                            end
-                            if not TimeLeft.Visible then
-                                HasOpenSlot = true
-                            end
-                        end
-                    end
-                end
-
-                if HasOpenSlot then
-                    SummerCraftingService.StartCraft:FireServer(CampfireRecipeSelected)
-                    task.wait(0.8)
-                elseif not HasClaim then
-                    task.wait(2)
-                end
-                task.wait(0.1)
-            end
-        end)
-
-        IsCraftingCampfire = false
-    end
-
-    -- ===================== FIXED SUBMIT FRUITS LOOP =====================
+    -- ===================== SUMMER HARVEST V2 LOOP =====================
     task.spawn(function()
         while true do
-            task.wait(BurnSpeedDelay)
-            
-            if AutoBurnPlantsEnabled and BurnFruitSelected and BurnFruitSelected ~= "None" then
+            task.wait(SubmitSpeedDelay)
+
+            if AutoSubmitPlantsEnabled and HarvestPlantSelected and HarvestPlantSelected ~= "None" then
                 pcall(function()
-                    local ActivationRemote = safeWaitPath(LocalPlayer, 5, "PlayerScripts", "InputGateway", "Activation")
-                    local GameEvents = safeWait(ReplicatedStorage, "GameEvents", 5)
+                    local ActivationRemote = safeWaitPath(LocalPlayer, 5,
+                        "PlayerScripts", "InputGateway", "Activation")
+                    local GameEvents   = safeWait(ReplicatedStorage, "GameEvents", 5)
                     local SubmitRemote = GameEvents and safeWaitPath(GameEvents, 5, "SummerFire", "Submit")
-                    
+
                     if not ActivationRemote or not SubmitRemote then
-                        if BurnParagraph then
-                            BurnParagraph:Set({
-                                Title = "Selected Fruit: " .. tostring(BurnFruitSelected),
+                        if HarvestParagraph then
+                            HarvestParagraph:Set({
+                                Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
                                 Content = "Status: Error (Remotes missing!)"
                             })
                         end
                         return
                     end
 
-                    local character = LocalPlayer.Character
-                    local backpack = LocalPlayer:FindFirstChild("Backpack")
-                    local foundFruit = false
-                    local searchName = tostring(BurnFruitSelected):lower()
+                    local character  = LocalPlayer.Character
+                    local backpack   = LocalPlayer:FindFirstChild("Backpack")
+                    local foundPlant = false
+                    local searchName = tostring(HarvestPlantSelected):lower()
 
                     if character and backpack then
-                        -- 1. Check if we are already holding the targeted fruit (relaxed lower-case match)
                         for _, item in ipairs(character:GetChildren()) do
                             if item:IsA("Tool") and string.find(item.Name:lower(), searchName) then
-                                foundFruit = true
+                                foundPlant = true
                                 break
                             end
                         end
 
-                        -- 2. If not holding it, look for it inside the backpack
-                        if not foundFruit then
+                        if not foundPlant then
                             for _, item in ipairs(backpack:GetChildren()) do
                                 if item:IsA("Tool") and string.find(item.Name:lower(), searchName) then
                                     local name = item.Name:lower()
-                                    -- Apply your strict filters
-                                    if not name:find("seed") and not name:find("sprinkler") and not name:find("can") and not name:find("crate") and not name:find("tool") and not name:find("pet") and not name:find("egg") and not name:find("ticket") then
+                                    if not name:find("seed") and not name:find("sprinkler")
+                                        and not name:find("can") and not name:find("crate")
+                                        and not name:find("tool") and not name:find("pet")
+                                        and not name:find("egg") and not name:find("ticket") then
                                         item.Parent = character
-                                        foundFruit = true
-                                        task.wait(0.15) -- Slightly extended equip time safety buffer
+                                        foundPlant  = true
+                                        task.wait(0.15)
                                         break
                                     end
                                 end
                             end
                         end
 
-                        -- 3. If still not found anywhere, clear tool selections
-                        if not foundFruit then
+                        if not foundPlant then
                             local Humanoid = character:FindFirstChildOfClass("Humanoid")
-                            if Humanoid then
-                                Humanoid:UnequipTools()
-                            end
-                            
-                            if BurnParagraph then
-                                BurnParagraph:Set({
-                                    Title = "Selected Fruit: " .. tostring(BurnFruitSelected), 
-                                    Content = "Status: Paused (Out of chosen item...)"
+                            if Humanoid then Humanoid:UnequipTools() end
+                            if HarvestParagraph then
+                                HarvestParagraph:Set({
+                                    Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
+                                    Content = "Status: Paused (Out of chosen plant...)"
                                 })
                             end
                             task.wait(1)
@@ -187,22 +113,26 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                         end
                     end
 
-                    -- Fire activation sequence and deliver payload if item is verified in hand
-                    if foundFruit then
-                        if BurnParagraph then
-                            BurnParagraph:Set({
-                                Title = "Selected Fruit: " .. tostring(BurnFruitSelected), 
-                                Content = "Status: Submitting Fruit..."
+                    if foundPlant then
+                        if HarvestParagraph then
+                            HarvestParagraph:Set({
+                                Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
+                                Content = "Status: Submitting to High Tide Harvest..."
                             })
                         end
 
-                        local fakeCFrame = CFrame.new(-184.319519, 0, 43.1255341, 0.830478072, 0.265547037, -0.489684522, -0, 0.879065394, 0.47670123, 0.557051301, -0.395889908, 0.730044544)
+                        -- Coordinates set facing toward the new sandcastle submit platform
+                        local fakeCFrame = CFrame.new(
+                            -184.319519, 0, 43.1255341,
+                            0.830478072, 0.265547037, -0.489684522,
+                            -0, 0.879065394, 0.47670123,
+                            0.557051301, -0.395889908, 0.730044544
+                        )
                         ActivationRemote:FireServer(true, fakeCFrame)
                         task.wait(0.1)
-
                         SubmitRemote:FireServer()
-                        
-                        if BurnSpeedDelay == 1.0 then
+
+                        if SubmitSpeedDelay == 1.0 then
                             task.wait(0.4)
                         else
                             task.wait(0.1)
@@ -210,10 +140,10 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                     end
                 end)
             else
-                if BurnParagraph then
-                    BurnParagraph:Set({
-                        Title = "Selected Fruit: " .. tostring(BurnFruitSelected or "None"), 
-                        Content = "Status: Idle / Off"
+                if HarvestParagraph then
+                    HarvestParagraph:Set({
+                        Title   = "Selected Plant: " .. tostring(HarvestPlantSelected or "None"),
+                        Content = "Status: Idle / Off (Waiting for High Tide Harvest)"
                     })
                 end
             end
@@ -221,108 +151,93 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     end)
 
     -- ===================== TAB UI =====================
-    local CampfireTab = Window:CreateTab("Campfire", "flame")
+    local CampfireTab = Window:CreateTab("Event", "gift")
 
-    -- ---- Campfire Crafting ----
-    CampfireTab:CreateSection("Campfire Crafting")
+    CampfireTab:CreateSection("Summer Harvest Event V2")
 
-    CampfireRecipeParagraph = CampfireTab:CreateParagraph({
-        Title   = "Selected Campfire Recipe:",
-        Content = "None",
-    })
-
-    CampfireTab:CreateToggle({
-        Name         = "Auto-Craft Campfire",
-        CurrentValue = false,
-        Flag         = "eventAutoCraftCampfire",
-        Callback     = function(Value)
-            AutoCraftCampfireEnabled = Value
-            if Value and CampfireRecipeSelected then
-                task.spawn(AutoCraftCampfireLoop)
-            end
-        end,
-    })
-
-    CampfireTab:CreateDropdown({
-        Name    = "Campfire Recipe",
-        Options = {
-            "1:1:Firepit Flower", "1:2:Cauliflower", "2:1:Campfire Crate",
-            "2:2:Common Summer Egg", "2:3:Green Apple", "2:4:Avocado",
-            "3:1:Super Watering Can", "3:2:Areaclaimer", "3:3:Banana", "3:4:Kiwi",
-            "4:1:Hearth Reed", "4:2:Rare Summer Egg", "4:3:Prickly Pear",
-            "5:1:Feijoa", "5:2:Paradise Egg", "5:3:Energy Chew",
-            "5:4:Pitcher Plant", "5:5:Campfire Egg",
-        },
-        CurrentOption   = {},
-        MultipleOptions = false,
-        Flag            = "eventCampfireRecipe",
-        Callback        = function(Option)
-            local choice = typeof(Option) == "table" and Option[1] or Option
-            CampfireRecipeSelected = (choice and choice ~= "") and choice or nil
-            
-            local listText = CampfireRecipeSelected or "None"
-            if CampfireRecipeParagraph then
-                CampfireRecipeParagraph:Set({
-                    Title = "Selected Campfire Recipe:",
-                    Content = listText
-                })
-            end
-
-            if AutoCraftCampfireEnabled and CampfireRecipeSelected then
-                task.spawn(AutoCraftCampfireLoop)
-            end
-        end,
-    })
-
-    CampfireTab:CreateDivider()
-
-    -- ---- Ember Burning ----
-    CampfireTab:CreateSection("Ember Burning")
-
-    BurnParagraph = CampfireTab:CreateParagraph({
-        Title = "Selected Fruit: None", 
+    HarvestParagraph = CampfireTab:CreateParagraph({
+        Title   = "Selected Plant: None",
         Content = "Status: Idle / Off"
     })
 
     CampfireTab:CreateToggle({
-        Name         = "Auto Hold & Submit Fruits",
+        Name         = "Auto Submit Plant (High Tide)",
         CurrentValue = false,
-        Flag         = "eventAutoBurnPlants",
+        Flag         = "eventAutoSubmitPlantsV2",
         Callback     = function(Value)
-            AutoBurnPlantsEnabled = Value
+            AutoSubmitPlantsEnabled = Value
         end,
     })
 
     CampfireTab:CreateDropdown({
-        Name    = "Submit Process Speed",
-        Options = {"Slow (1.0s Delay)", "Fast (0.5s Delay)"},
+        Name            = "Submit Process Speed",
+        Options         = {"Slow (1.0s Delay)", "Fast (0.5s Delay)"},
         CurrentOption   = {"Slow (1.0s Delay)"},
         MultipleOptions = false,
-        Flag            = "eventBurnProcessSpeed",
+        Flag            = "eventHarvestProcessSpeed",
         Callback        = function(Option)
             local choice = typeof(Option) == "table" and Option[1] or Option
             if choice and string.find(choice, "Fast") then
-                BurnSpeedDelay = 0.5
+                SubmitSpeedDelay = 0.5
             else
-                BurnSpeedDelay = 1.0
+                SubmitSpeedDelay = 1.0
             end
         end,
     })
 
-    CampfireTab:CreateDropdown({
-        Name    = "Select Fruit to Submit",
-        Options = fruitDropdownPool,
+    -- Dynamic Dropdown tied to the Search Box
+    PlantDropdown = CampfireTab:CreateDropdown({
+        Name            = "Select Plant to Submit",
+        Options         = plantDropdownPool,
         CurrentOption   = {},
         MultipleOptions = false,
         UseAutoComplete = true,
-        Flag            = "eventSelectFruitToBurn",
+        Flag            = "eventSelectPlantToHarvest",
         Callback        = function(Option)
             local choice = typeof(Option) == "table" and Option[1] or Option
-            if choice and choice ~= "" then
-                BurnFruitSelected = choice
-                if BurnParagraph then
-                    BurnParagraph:Set({Title = "Selected Fruit: " .. choice, Content = "Status: Initializing..."})
+            if choice and choice ~= "" and choice ~= "No results found" then
+                HarvestPlantSelected = choice
+                if HarvestParagraph then
+                    HarvestParagraph:Set({
+                        Title   = "Selected Plant: " .. choice,
+                        Content = "Status: Initializing..."
+                    })
                 end
+            end
+        end,
+    })
+
+    -- Forward declaration so the Input element can interact with it
+    local PlantDropdown 
+
+    -- Search Box for filtering dropdown items
+    CampfireTab:CreateInput({
+        Name = "Search Plant...",
+        PlaceholderText = "Type plant name here...",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(Text)
+            local query = tostring(Text):lower()
+            local filteredPool = {}
+
+            -- Filter the main list based on query
+            if query == "" then
+                filteredPool = plantDropdownPool
+            else
+                for _, plantName in ipairs(plantDropdownPool) do
+                    if string.find(plantName:lower(), query) then
+                        table.insert(filteredPool, plantName)
+                    end
+                end
+            end
+
+            -- Automatically push "None" fallback if no search items match
+            if #filteredPool == 0 then
+                table.insert(filteredPool, "No results found")
+            end
+
+            -- Update Rayfield Dropdown elements dynamically
+            if PlantDropdown then
+                PlantDropdown:Refresh(filteredPool, true)
             end
         end,
     })
