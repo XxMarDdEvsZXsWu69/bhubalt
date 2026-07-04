@@ -57,13 +57,53 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end
         return nil
     end
+    
+    -- Returns true only while High Tide Harvest is ACTIVE
+local function isHighTideHarvestRunning()
+    local PlayerGui = LocalPlayer:FindFirstChild("PlayerGui")
+    if not PlayerGui then
+        return false
+    end
+
+    for _, obj in ipairs(PlayerGui:GetDescendants()) do
+        if obj:IsA("TextLabel") then
+            local txt = tostring(obj.Text)
+
+            -- Waiting timer
+            if txt:find("Next High Tide Harvest") then
+                return false
+            end
+
+            -- Event has started
+            if txt:find("High Tide Harvest") and not txt:find("Next") then
+                return true
+            end
+        end
+    end
+
+    return false
+end
 
     -- ===================== SUMMER HARVEST V2 LOOP =====================
     task.spawn(function()
         while true do
             task.wait(SubmitSpeedDelay)
 
-            if AutoSubmitPlantsEnabled and HarvestPlantSelected and HarvestPlantSelected ~= "None" then
+            if AutoSubmitPlantsEnabled
+            and HarvestPlantSelected
+            and HarvestPlantSelected ~= "None" then
+                -- Pause while High Tide is not active
+                if not isHighTideHarvestRunning() then
+                    if HarvestParagraph then
+                        HarvestParagraph:Set({
+                            Title = "Selected Plant: " .. tostring(HarvestPlantSelected),
+                            Content = "Status: Waiting for High Tide Harvest..."
+                            
+                        })
+                    end
+                    task.wait(1)
+                    continue
+                    end
                 pcall(function()
                     -- Locate the ProximityPrompt shown in Screenshot_20260705-050811.jpg
                     local prompt = findSubmitPrompt()
@@ -130,7 +170,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                         if HarvestParagraph then
                             HarvestParagraph:Set({
                                 Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
-                                Content = "Status: Interacting with Submit Prompt..."
+                                Content = "Status: High Tide Active - Auto Submitting..."
                             })
                         end
 
