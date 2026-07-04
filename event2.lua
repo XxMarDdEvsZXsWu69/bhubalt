@@ -151,42 +151,64 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     end)
 
     -- ===================== TAB UI =====================
-    local CampfireTab = Window:CreateTab("Event", "gift")
+local CampfireTab = Window:CreateTab("Event", "gift")
 
-    CampfireTab:CreateSection("Summer Harvest Event V2")
+CampfireTab:CreateSection("Summer Harvest Event V2")
 
-    HarvestParagraph = CampfireTab:CreateParagraph({
-        Title   = "Selected Plant: None",
-        Content = "Status: Idle / Off"
-    })
+HarvestParagraph = CampfireTab:CreateParagraph({
+    Title   = "Selected Plant: None",
+    Content = "Status: Idle / Off"
+})
 
-    CampfireTab:CreateToggle({
-        Name         = "Auto Submit Plant (High Tide)",
-        CurrentValue = false,
-        Flag         = "eventAutoSubmitPlantsV2",
-        Callback     = function(Value)
-            AutoSubmitPlantsEnabled = Value
-        end,
-    })
+CampfireTab:CreateToggle({
+    Name         = "Auto Submit Plant (High Tide)",
+    CurrentValue = false,
+    Flag         = "eventAutoSubmitPlantsV2",
+    Callback     = function(Value)
+        AutoSubmitPlantsEnabled = Value
+    end,
+})
 
-    CampfireTab:CreateDropdown({
-        Name            = "Submit Process Speed",
-        Options         = {"Slow (1.0s Delay)", "Fast (0.5s Delay)"},
-        CurrentOption   = {"Slow (1.0s Delay)"},
-        MultipleOptions = false,
-        Flag            = "eventHarvestProcessSpeed",
-        Callback        = function(Option)
-            local choice = typeof(Option) == "table" and Option[1] or Option
-            if choice and string.find(choice, "Fast") then
-                SubmitSpeedDelay = 0.5
-            else
-                SubmitSpeedDelay = 1.0
+CampfireTab:CreateDropdown({
+    Name            = "Submit Process Speed",
+    Options         = {"Slow (1.0s Delay)", "Fast (0.5s Delay)"},
+    CurrentOption   = {"Slow (1.0s Delay)"},
+    MultipleOptions = false,
+    Flag            = "eventHarvestProcessSpeed",
+    Callback        = function(Option)
+        local choice = typeof(Option) == "table" and Option[1] or Option
+        if choice and string.find(choice, "Fast") then
+            SubmitSpeedDelay = 0.5
+        else
+            SubmitSpeedDelay = 1.0
+        end
+    end,
+})
+
+local fullPlantDropdownPool = table.clone(plantDropdownPool)
+
+local PlantDropdown = CampfireTab:CreateDropdown({
+    Name            = "Select Plant to Submit",
+    Options         = plantDropdownPool,
+    CurrentOption   = {},
+    MultipleOptions = false,
+    UseAutoComplete = true,
+    Flag            = "eventSelectPlantToHarvest",
+    Callback        = function(Option)
+        local choice = typeof(Option) == "table" and Option[1] or Option
+        if choice and choice ~= "" then
+            HarvestPlantSelected = choice
+            if HarvestParagraph then
+                HarvestParagraph:Set({
+                    Title   = "Selected Plant: " .. choice,
+                    Content = "Status: Initializing..."
+                })
             end
-        end,
-    })
-    local fullPlantDropdownPool = table.clone(plantDropdownPool)
-    
-    CampfireTab:CreateInput({
+        end
+    end,
+})
+
+CampfireTab:CreateInput({
     Name = "Search Fruit",
     PlaceholderText = "Type fruit name...",
     RemoveTextAfterFocusLost = false,
@@ -209,28 +231,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     end
 })
 
-    local PlantDropdown = CampfireTab:CreateDropdown({
-        Name            = "Select Plant to Submit",
-        Options         = plantDropdownPool,
-        CurrentOption   = {},
-        MultipleOptions = false,
-        UseAutoComplete = true,
-        Flag            = "eventSelectPlantToHarvest",
-        Callback        = function(Option)
-            local choice = typeof(Option) == "table" and Option[1] or Option
-            if choice and choice ~= "" then
-                HarvestPlantSelected = choice
-                if HarvestParagraph then
-                    HarvestParagraph:Set({
-                        Title   = "Selected Plant: " .. choice,
-                        Content = "Status: Initializing..."
-                    })
-                end
-            end
-        end,
-    })
-
-    CampfireTab:CreateDivider()
+CampfireTab:CreateDivider()
 end
 
 return M
