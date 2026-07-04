@@ -8,6 +8,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
     -- ===================== STATE =====================
     local AutoSubmitPlantsEnabled  = false
+    local AutoTakeSummerFruitEnabled = false
     local HarvestPlantSelected     = nil
     local SubmitSpeedDelay         = 1.0
     local HarvestParagraph         = nil
@@ -189,6 +190,64 @@ end
             end
         end
     end)
+    
+       -- Georgia NPC ProximityPrompt
+local function findGeorgiaPrompt()
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") then
+            if obj.ObjectText == "Georgia"
+            or obj.ActionText == "Talk" then
+                return obj
+            end
+        end
+    end
+    return nil
+end
+
+-- Press dialogue option #2 (Take all my summer fruits)
+local function takeAllSummerFruit()
+    pcall(function()
+
+        local prompt = findGeorgiaPrompt()
+        if not prompt then
+            return
+        end
+
+        fireproximityprompt(prompt)
+
+        task.wait(0.6)
+
+        -- Search every dialogue RemoteEvent
+        for _, v in ipairs(game:GetDescendants()) do
+            if v:IsA("RemoteEvent") then
+                pcall(function()
+                    v:FireServer(2)
+                end)
+            end
+        end
+
+    end)
+end
+    
+    task.spawn(function()
+
+    while true do
+        task.wait(1)
+
+        if not AutoTakeSummerFruitEnabled then
+            continue
+        end
+
+        -- Pause when event isn't active
+        if not isHighTideHarvestRunning() then
+            continue
+        end
+
+        takeAllSummerFruit()
+
+    end
+
+end)
 
     -- ===================== TAB UI =====================
 local CampfireTab = Window:CreateTab("Event", "gift")
@@ -281,6 +340,16 @@ local CampfireTab = Window:CreateTab("Event", "gift")
             end
         end,
     })
+  
+  CampfireTab:CreateToggle({
+    Name = "Auto Take All Summer Fruit",
+    CurrentValue = false,
+    Flag = "eventAutoTakeSummerFruit",
+
+    Callback = function(Value)
+        AutoTakeSummerFruitEnabled = Value
+    end,
+})
 
     CampfireTab:CreateDivider()
 end
