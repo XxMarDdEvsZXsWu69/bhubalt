@@ -185,35 +185,13 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end,
     })
 
-    -- Dynamic Dropdown tied to the Search Box
-    PlantDropdown = CampfireTab:CreateDropdown({
-        Name            = "Select Plant to Submit",
-        Options         = plantDropdownPool,
-        CurrentOption   = {},
-        MultipleOptions = false,
-        UseAutoComplete = true,
-        Flag            = "eventSelectPlantToHarvest",
-        Callback        = function(Option)
-            local choice = typeof(Option) == "table" and Option[1] or Option
-            if choice and choice ~= "" and choice ~= "No results found" then
-                HarvestPlantSelected = choice
-                if HarvestParagraph then
-                    HarvestParagraph:Set({
-                        Title   = "Selected Plant: " .. choice,
-                        Content = "Status: Initializing..."
-                    })
-                end
-            end
-        end,
-    })
-
     -- Forward declaration so the Input element can interact with it
     local PlantDropdown 
 
     -- Search Box for filtering dropdown items
     CampfireTab:CreateInput({
-        Name = "Search Plant...",
-        PlaceholderText = "Type plant name here...",
+        Name = "Search Plant",
+        PlaceholderText = "Type here",
         RemoveTextAfterFocusLost = false,
         Callback = function(Text)
             local query = tostring(Text):lower()
@@ -238,6 +216,28 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             -- Update Rayfield Dropdown elements dynamically
             if PlantDropdown then
                 PlantDropdown:Refresh(filteredPool, true)
+            end
+        end,
+    })
+
+    -- Dynamic Dropdown tied to the Search Box
+    PlantDropdown = CampfireTab:CreateDropdown({
+        Name            = "Select Plant to Submit",
+        Options         = plantDropdownPool,
+        CurrentOption   = {},
+        MultipleOptions = false,
+        UseAutoComplete = true,
+        Flag            = "eventSelectPlantToHarvest",
+        Callback        = function(Option)
+            local choice = typeof(Option) == "table" and Option[1] or Option
+            if choice and choice ~= "" and choice ~= "No results found" then
+                HarvestPlantSelected = choice
+                if HarvestParagraph then
+                    HarvestParagraph:Set({
+                        Title   = "Selected Plant: " .. choice,
+                        Content = "Status: Initializing..."
+                    })
+                end
             end
         end,
     })
