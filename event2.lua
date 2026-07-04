@@ -8,7 +8,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
     -- ===================== STATE =====================
     local AutoSubmitPlantsEnabled  = false
-    local AutoTakeSummerFruitEnabled = false
+    local AutoTakeFruitsEnabled    = false -- New state variable
     local HarvestPlantSelected     = nil
     local SubmitSpeedDelay         = 1.0
     local HarvestParagraph         = nil
@@ -58,32 +58,87 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end
         return nil
     end
+
+    -- Helper to find Georgia's Talk ProximityPrompt
+    local function findGeorgiaPrompt()
+        for _, desc in ipairs(Workspace:GetDescendants()) do
+            if desc:IsA("ProximityPrompt") and desc.ActionText == "Talk" and desc.Parent and desc.Parent.Name == "Georgia" then
+                return desc
+            end
+            -- Fallback if the parent isn't named Georgia but the prompt text matches
+            if desc:IsA("ProximityPrompt") and desc.ActionText == "Talk" and desc.Parent and desc.Parent:FindFirstChild("Georgia") then
+                return desc
+            end
+        end
+        -- General fallback for any "Talk" prompt near the event area if structure names differ
+        for _, desc in ipairs(Workspace:GetDescendants()) do
+            if desc:IsA("ProximityPrompt") and desc.ActionText == "Talk" then
+                return desc
+            end
+        end
+        return nil
+    end
     
     -- Returns true only while High Tide Harvest is ACTIVE
-local function isHighTideHarvestRunning()
-    local PlayerGui = LocalPlayer:FindFirstChild("PlayerGui")
-    if not PlayerGui then
+    local function isHighTideHarvestRunning()
+        local PlayerGui = LocalPlayer:FindFirstChild("PlayerGui")
+        if not PlayerGui then
+            return false
+        end
+
+        for _, obj in ipairs(PlayerGui:GetDescendants()) do
+            if obj:IsA("TextLabel") then
+                local txt = tostring(obj.Text)
+
+                -- Waiting timer
+                if txt:find("Next High Tide Harvest") then
+                    return false
+                end
+
+                -- Event has started
+                if txt:find("High Tide Harvest") and not txt:find("Next") then
+                    return true
+                end
+            end
+        end
+
         return false
     end
 
-    for _, obj in ipairs(PlayerGui:GetDescendants()) do
-        if obj:IsA("TextLabel") then
-            local txt = tostring(obj.Text)
-
-            -- Waiting timer
-            if txt:find("Next High Tide Harvest") then
-                return false
-            end
-
-            -- Event has started
-            if txt:find("High Tide Harvest") and not txt:find("Next") then
-                return true
+    -- ===================== AUTO TAKE ALL FRUITS LOOP =====================
+    task.spawn(function()
+        while true do
+            task.wait(1.5) -- Reasonable loop delay to prevent spamming while waiting
+            
+            if AutoTakeFruitsEnabled then
+                if isHighTideHarvestRunning() then
+                    pcall(function()
+                        local prompt = findGeorgiaPrompt()
+                        if prompt then
+                            fireproximityprompt(prompt, 1)
+                            
+                            -- Handle selecting option #2 ["Take all my summer fruits"] if a dialogue UI pops up
+                            task.wait(0.3)
+                            local PlayerGui = LocalPlayer:FindFirstChild("PlayerGui")
+                            if PlayerGui then
+                                for _, obj in ipairs(PlayerGui:GetDescendants()) do
+                                    if obj:IsA("TextLabel") and (obj.Text:find("Take all my summer fruits") or obj.Text:find("Take all my summer")) then
+                                        -- Try to click the parent button of the text label
+                                        local button = obj:FindFirstAncestorOfClass("TextButton") or obj.Parent:IsA("TextButton") and obj.Parent
+                                        if button then
+                                            local virtualInput = game:GetService("VirtualInputManager")
+                                            virtualInput:SendMouseButtonEvent(button.AbsolutePosition.X + (button.AbsoluteSize.X / 2), button.AbsolutePosition.Y + (button.AbsoluteSize.Y / 2), 0, true, game, 1)
+                                            virtualInput:SendMouseButtonEvent(button.AbsolutePosition.X + (button.AbsoluteSize.X / 2), button.AbsolutePosition.Y + (button.AbsoluteSize.Y / 2), 0, false, game, 1)
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end)
+                end
             end
         end
-    end
-
-    return false
-end
+    end)
 
     -- ===================== SUMMER HARVEST V2 LOOP =====================
     task.spawn(function()
@@ -104,9 +159,8 @@ end
                     end
                     task.wait(1)
                     continue
-                    end
+                end
                 pcall(function()
-                    -- Locate the ProximityPrompt shown in Screenshot_20260705-050811.jpg
                     local prompt = findSubmitPrompt()
 
                     if not prompt then
@@ -190,73 +244,25 @@ end
             end
         end
     end)
-    
-       -- Georgia NPC ProximityPrompt
-local function findGeorgiaPrompt()
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        if obj:IsA("ProximityPrompt") then
-            if obj.ObjectText == "Georgia"
-            or obj.ActionText == "Talk" then
-                return obj
-            end
-        end
-    end
-    return nil
-end
-
--- Press dialogue option #2 (Take all my summer fruits)
-local function takeAllSummerFruit()
-    pcall(function()
-
-        local prompt = findGeorgiaPrompt()
-        if not prompt then
-            return
-        end
-
-        fireproximityprompt(prompt)
-
-        task.wait(0.6)
-
-        -- Search every dialogue RemoteEvent
-        for _, v in ipairs(game:GetDescendants()) do
-            if v:IsA("RemoteEvent") then
-                pcall(function()
-                    v:FireServer(2)
-                end)
-            end
-        end
-
-    end)
-end
-    
-    task.spawn(function()
-
-    while true do
-        task.wait(1)
-
-        if not AutoTakeSummerFruitEnabled then
-            continue
-        end
-
-        -- Pause when event isn't active
-        if not isHighTideHarvestRunning() then
-            continue
-        end
-
-        takeAllSummerFruit()
-
-    end
-
-end)
 
     -- ===================== TAB UI =====================
-local CampfireTab = Window:CreateTab("Event", "gift")
+    local CampfireTab = Window:CreateTab("Event", "gift")
 
     CampfireTab:CreateSection("Summer Harvest Event V2")
 
     HarvestParagraph = CampfireTab:CreateParagraph({
         Title   = "Selected Plant: None",
         Content = "Status: Idle / Off"
+    })
+
+    -- NEW TOGGLE FOR GEORGIA NPC FRUIT HARVEST
+    CampfireTab:CreateToggle({
+        Name         = "Auto Take All Summer Fruits",
+        CurrentValue = false,
+        Flag         = "eventAutoTakeSummerFruits",
+        Callback     = function(Value)
+            AutoTakeFruitsEnabled = Value
+        end,
     })
 
     CampfireTab:CreateToggle({
@@ -278,8 +284,6 @@ local CampfireTab = Window:CreateTab("Event", "gift")
             local choice = typeof(Option) == "table" and Option[1] or Option
             if choice and string.find(choice, "Fast") then
                 SubmitSpeedDelay = 0.5
-            else
-                SubmitSpeedDelay = 1.0
             end
         end,
     })
@@ -340,16 +344,6 @@ local CampfireTab = Window:CreateTab("Event", "gift")
             end
         end,
     })
-  
-  CampfireTab:CreateToggle({
-    Name = "Auto Take All Summer Fruit",
-    CurrentValue = false,
-    Flag = "eventAutoTakeSummerFruit",
-
-    Callback = function(Value)
-        AutoTakeSummerFruitEnabled = Value
-    end,
-})
 
     CampfireTab:CreateDivider()
 end
