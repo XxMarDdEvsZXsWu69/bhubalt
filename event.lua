@@ -151,7 +151,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     end)
 
     -- ===================== TAB UI =====================
-    local CampfireTab = Window:CreateTab("Event", "gift")
+local CampfireTab = Window:CreateTab("Event", "gift")
 
     CampfireTab:CreateSection("Summer Harvest Event V2")
 
@@ -185,7 +185,11 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end,
     })
 
-    CampfireTab:CreateDropdown({
+    -- Forward declaration so the Input element below can interact with it
+    local PlantDropdown 
+
+    -- Dynamic Dropdown
+    PlantDropdown = CampfireTab:CreateDropdown({
         Name            = "Select Plant to Submit",
         Options         = plantDropdownPool,
         CurrentOption   = {},
@@ -194,7 +198,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         Flag            = "eventSelectPlantToHarvest",
         Callback        = function(Option)
             local choice = typeof(Option) == "table" and Option[1] or Option
-            if choice and choice ~= "" then
+            if choice and choice ~= "" and choice ~= "No results found" then
                 HarvestPlantSelected = choice
                 if HarvestParagraph then
                     HarvestParagraph:Set({
@@ -202,6 +206,38 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                         Content = "Status: Initializing..."
                     })
                 end
+            end
+        end,
+    })
+
+    -- Search Box placed AFTER the dropdown, tied directly to it
+    CampfireTab:CreateInput({
+        Name = "Search Plant",
+        PlaceholderText = "Type here",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(Text)
+            local query = tostring(Text):lower()
+            local filteredPool = {}
+
+            -- Filter the main list based on query
+            if query == "" then
+                filteredPool = plantDropdownPool
+            else
+                for _, plantName in ipairs(plantDropdownPool) do
+                    if string.find(plantName:lower(), query) then
+                        table.insert(filteredPool, plantName)
+                    end
+                end
+            end
+
+            -- Automatically push "None" fallback if no search items match
+            if #filteredPool == 0 then
+                table.insert(filteredPool, "No results found")
+            end
+
+            -- Update Rayfield Dropdown elements dynamically
+            if PlantDropdown then
+                PlantDropdown:Refresh(filteredPool, true)
             end
         end,
     })
