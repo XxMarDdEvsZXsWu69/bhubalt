@@ -3,6 +3,7 @@ local M = {}
 function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, beastHubIcon)
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local Players           = game:GetService("Players")
+    local Workspace         = game:GetService("Workspace")
     local LocalPlayer       = Players.LocalPlayer
 
     -- ===================== STATE =====================
@@ -47,6 +48,16 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     end
     table.sort(plantDropdownPool)
 
+    -- Helper to find the Submit Plant ProximityPrompt in the Workspace
+    local function findSubmitPrompt()
+        for _, desc in ipairs(Workspace:GetDescendants()) do
+            if desc:IsA("ProximityPrompt") and desc.ActionText == "Submit Plant" then
+                return desc
+            end
+        end
+        return nil
+    end
+
     -- ===================== SUMMER HARVEST V2 LOOP =====================
     task.spawn(function()
         while true do
@@ -54,16 +65,14 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
             if AutoSubmitPlantsEnabled and HarvestPlantSelected and HarvestPlantSelected ~= "None" then
                 pcall(function()
-                    local ActivationRemote = safeWaitPath(LocalPlayer, 5,
-                        "PlayerScripts", "InputGateway", "Activation")
-                    local GameEvents   = safeWait(ReplicatedStorage, "GameEvents", 5)
-                    local SubmitRemote = GameEvents and safeWaitPath(GameEvents, 5, "SummerFire", "Submit")
+                    -- Locate the ProximityPrompt shown in Screenshot_20260705-050811.jpg
+                    local prompt = findSubmitPrompt()
 
-                    if not ActivationRemote or not SubmitRemote then
+                    if not prompt then
                         if HarvestParagraph then
                             HarvestParagraph:Set({
                                 Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
-                                Content = "Status: Error (Remotes missing!)"
+                                Content = "Status: Waiting for 'Submit Plant' structure/prompt..."
                             })
                         end
                         return
@@ -75,6 +84,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                     local searchName = tostring(HarvestPlantSelected):lower()
 
                     if character and backpack then
+                        -- Check if currently equipped
                         for _, item in ipairs(character:GetChildren()) do
                             if item:IsA("Tool") and string.find(item.Name:lower(), searchName) then
                                 foundPlant = true
@@ -82,6 +92,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                             end
                         end
 
+                        -- Equip from Backpack if needed
                         if not foundPlant then
                             for _, item in ipairs(backpack:GetChildren()) do
                                 if item:IsA("Tool") and string.find(item.Name:lower(), searchName) then
@@ -99,6 +110,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                             end
                         end
 
+                        -- Handle scenario where the plant asset runs out
                         if not foundPlant then
                             local Humanoid = character:FindFirstChildOfClass("Humanoid")
                             if Humanoid then Humanoid:UnequipTools() end
@@ -113,30 +125,18 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                         end
                     end
 
-                    if foundPlant then
+                    -- Fire interaction with the prompt directly
+                    if foundPlant and prompt then
                         if HarvestParagraph then
                             HarvestParagraph:Set({
                                 Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
-                                Content = "Status: Submitting to High Tide Harvest..."
+                                Content = "Status: Interacting with Submit Prompt..."
                             })
                         end
 
-                        -- Coordinates set facing toward the new sandcastle submit platform
-                        local fakeCFrame = CFrame.new(
-                            -184.319519, 0, 43.1255341,
-                            0.830478072, 0.265547037, -0.489684522,
-                            -0, 0.879065394, 0.47670123,
-                            0.557051301, -0.395889908, 0.730044544
-                        )
-                        ActivationRemote:FireServer(true, fakeCFrame)
-                        task.wait(0.1)
-                        SubmitRemote:FireServer()
-
-                        if SubmitSpeedDelay == 1.0 then
-                            task.wait(0.4)
-                        else
-                            task.wait(0.1)
-                        end
+                        -- Triggers the ProximityPrompt action directly
+                        fireproximityprompt(prompt, 1)
+                        task.wait(0.2)
                     end
                 end)
             else
@@ -184,44 +184,32 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             end
         end,
     })
-
-    -- Forward declaration so the Input element can interact with it
-    local PlantDropdown 
-
-    -- Search Box for filtering dropdown items
+    local fullPlantDropdownPool = table.clone(plantDropdownPool)
+    
     CampfireTab:CreateInput({
-        Name = "Search Plant",
-        PlaceholderText = "Type here",
-        RemoveTextAfterFocusLost = false,
-        Callback = function(Text)
-            local query = tostring(Text):lower()
-            local filteredPool = {}
+    Name = "Search Fruit",
+    PlaceholderText = "Type fruit name...",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        Text = tostring(Text or ""):lower()
 
-            -- Filter the main list based on query
-            if query == "" then
-                filteredPool = plantDropdownPool
-            else
-                for _, plantName in ipairs(plantDropdownPool) do
-                    if string.find(plantName:lower(), query) then
-                        table.insert(filteredPool, plantName)
-                    end
+        local filtered = {}
+
+        if Text == "" then
+            filtered = table.clone(fullPlantDropdownPool)
+        else
+            for _, plant in ipairs(fullPlantDropdownPool) do
+                if plant:lower():find(Text, 1, true) then
+                    table.insert(filtered, plant)
                 end
             end
+        end
 
-            -- Automatically push "None" fallback if no search items match
-            if #filteredPool == 0 then
-                table.insert(filteredPool, "No results found")
-            end
+        PlantDropdown:Refresh(filtered, true)
+    end
+})
 
-            -- Update Rayfield Dropdown elements dynamically
-            if PlantDropdown then
-                PlantDropdown:Refresh(filteredPool, true)
-            end
-        end,
-    })
-
-    -- Dynamic Dropdown tied to the Search Box
-    PlantDropdown = CampfireTab:CreateDropdown({
+    local PlantDropdown = CampfireTab:CreateDropdown({
         Name            = "Select Plant to Submit",
         Options         = plantDropdownPool,
         CurrentOption   = {},
@@ -230,7 +218,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         Flag            = "eventSelectPlantToHarvest",
         Callback        = function(Option)
             local choice = typeof(Option) == "table" and Option[1] or Option
-            if choice and choice ~= "" and choice ~= "No results found" then
+            if choice and choice ~= "" then
                 HarvestPlantSelected = choice
                 if HarvestParagraph then
                     HarvestParagraph:Set({
