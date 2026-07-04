@@ -153,85 +153,96 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
     -- ===================== TAB UI =====================
 local CampfireTab = Window:CreateTab("Event", "gift")
 
-CampfireTab:CreateSection("Summer Harvest Event V2")
+    CampfireTab:CreateSection("Summer Harvest Event V2")
 
-HarvestParagraph = CampfireTab:CreateParagraph({
-    Title   = "Selected Plant: None",
-    Content = "Status: Idle / Off"
-})
+    HarvestParagraph = CampfireTab:CreateParagraph({
+        Title   = "Selected Plant: None",
+        Content = "Status: Idle / Off"
+    })
 
-CampfireTab:CreateToggle({
-    Name         = "Auto Submit Plant (High Tide)",
-    CurrentValue = false,
-    Flag         = "eventAutoSubmitPlantsV2",
-    Callback     = function(Value)
-        AutoSubmitPlantsEnabled = Value
-    end,
-})
+    CampfireTab:CreateToggle({
+        Name         = "Auto Submit Plant (High Tide)",
+        CurrentValue = false,
+        Flag         = "eventAutoSubmitPlantsV2",
+        Callback     = function(Value)
+            AutoSubmitPlantsEnabled = Value
+        end,
+    })
 
-CampfireTab:CreateDropdown({
-    Name            = "Submit Process Speed",
-    Options         = {"Slow (1.0s Delay)", "Fast (0.5s Delay)"},
-    CurrentOption   = {"Slow (1.0s Delay)"},
-    MultipleOptions = false,
-    Flag            = "eventHarvestProcessSpeed",
-    Callback        = function(Option)
-        local choice = typeof(Option) == "table" and Option[1] or Option
-        if choice and string.find(choice, "Fast") then
-            SubmitSpeedDelay = 0.5
-        else
-            SubmitSpeedDelay = 1.0
-        end
-    end,
-})
-
-local fullPlantDropdownPool = table.clone(plantDropdownPool)
-
-local PlantDropdown = CampfireTab:CreateDropdown({
-    Name            = "Select Plant to Submit",
-    Options         = plantDropdownPool,
-    CurrentOption   = {},
-    MultipleOptions = false,
-    UseAutoComplete = true,
-    Flag            = "eventSelectPlantToHarvest",
-    Callback        = function(Option)
-        local choice = typeof(Option) == "table" and Option[1] or Option
-        if choice and choice ~= "" then
-            HarvestPlantSelected = choice
-            if HarvestParagraph then
-                HarvestParagraph:Set({
-                    Title   = "Selected Plant: " .. choice,
-                    Content = "Status: Initializing..."
-                })
+    CampfireTab:CreateDropdown({
+        Name            = "Submit Process Speed",
+        Options         = {"Slow (1.0s Delay)", "Fast (0.5s Delay)"},
+        CurrentOption   = {"Slow (1.0s Delay)"},
+        MultipleOptions = false,
+        Flag            = "eventHarvestProcessSpeed",
+        Callback        = function(Option)
+            local choice = typeof(Option) == "table" and Option[1] or Option
+            if choice and string.find(choice, "Fast") then
+                SubmitSpeedDelay = 0.5
+            else
+                SubmitSpeedDelay = 1.0
             end
-        end
-    end,
-})
+        end,
+    })
 
-CampfireTab:CreateInput({
-    Name = "Search Fruit",
-    PlaceholderText = "Type fruit name...",
-    RemoveTextAfterFocusLost = false,
-    Callback = function(Text)
-        Text = tostring(Text or ""):lower()
+    -- Forward declaration so the Input element below can interact with it
+    local PlantDropdown 
 
-        local filtered = {}
-
-        if Text == "" then
-            filtered = table.clone(fullPlantDropdownPool)
-        else
-            for _, plant in ipairs(fullPlantDropdownPool) do
-                if plant:lower():find(Text, 1, true) then
-                    table.insert(filtered, plant)
+    -- Dynamic Dropdown
+    PlantDropdown = CampfireTab:CreateDropdown({
+        Name            = "Select Plant to Submit",
+        Options         = plantDropdownPool,
+        CurrentOption   = {},
+        MultipleOptions = false,
+        UseAutoComplete = true,
+        Flag            = "eventSelectPlantToHarvest",
+        Callback        = function(Option)
+            local choice = typeof(Option) == "table" and Option[1] or Option
+            if choice and choice ~= "" and choice ~= "No results found" then
+                HarvestPlantSelected = choice
+                if HarvestParagraph then
+                    HarvestParagraph:Set({
+                        Title   = "Selected Plant: " .. choice,
+                        Content = "Status: Initializing..."
+                    })
                 end
             end
-        end
+        end,
+    })
 
-        PlantDropdown:Refresh(filtered, true)
-    end
-})
+    -- Search Box placed AFTER the dropdown, tied directly to it
+    CampfireTab:CreateInput({
+        Name = "Search Plant",
+        PlaceholderText = "Type here",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(Text)
+            local query = tostring(Text):lower()
+            local filteredPool = {}
 
-CampfireTab:CreateDivider()
+            -- Filter the main list based on query
+            if query == "" then
+                filteredPool = plantDropdownPool
+            else
+                for _, plantName in ipairs(plantDropdownPool) do
+                    if string.find(plantName:lower(), query) then
+                        table.insert(filteredPool, plantName)
+                    end
+                end
+            end
+
+            -- Automatically push "None" fallback if no search items match
+            if #filteredPool == 0 then
+                table.insert(filteredPool, "No results found")
+            end
+
+            -- Update Rayfield Dropdown elements dynamically
+            if PlantDropdown then
+                PlantDropdown:Refresh(filteredPool, true)
+            end
+        end,
+    })
+
+    CampfireTab:CreateDivider()
 end
 
 return M
