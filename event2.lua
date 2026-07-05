@@ -58,29 +58,61 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         return nil
     end
 
+    -- Helper to read the High Tide Event Timer Text
+    local function getHighTideTimerText()
+        -- Direct pathing based on screenshot: Workspace -> Sign -> Part -> BillboardGui -> SummerHarvestTimer
+        for _, desc in ipairs(Workspace:GetDescendants()) do
+            if desc:IsA("TextLabel") and desc.Name == "SummerHarvestTimer" then
+                return desc.Text
+            end
+        end
+        return ""
+    end
+
     -- ===================== SUMMER HARVEST V2 LOOP =====================
     task.spawn(function()
         while true do
             task.wait(SubmitSpeedDelay)
 
-            if AutoSubmitPlantsEnabled and HarvestPlantSelected and HarvestPlantSelected ~= "None" then
-                pcall(function()
-                    local prompt = findSubmitPrompt()
+            if AutoSubmitPlantsEnabled then
+                local timerText = getHighTideTimerText()
+                local isHighTideActive = true
+                
+                -- If text mentions "Next" or counting down "Minutes", High Tide hasn't started yet
+                if string.find(timerText, "Next") or string.find(timerText, "Minutes") or string.find(timerText, "Seconds") then
+                    isHighTideActive = false
+                end
 
-                    if not prompt then
-                        if HarvestParagraph then
-                            HarvestParagraph:Set({
-                                Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
-                                Content = "Status: Waiting for 'Submit Plant' structure/prompt..."
-                            })
-                        end
-                        return
+                if not isHighTideActive then
+                    if HarvestParagraph then
+                        HarvestParagraph:Set({
+                            Title   = "Selected Plant: " .. tostring(HarvestPlantSelected or "None"),
+                            Content = "Status: Paused (Waiting for High Tide event to start...)"
+                        })
                     end
+                    task.wait(1) -- Idle slower while waiting for event
+                    continue
+                end
 
-                    local character  = LocalPlayer.Character
-                    local backpack   = LocalPlayer:FindFirstChild("Backpack")
-                    local foundPlant = false
-                    local searchName = tostring(HarvestPlantSelected):lower()
+                -- High Tide is Active! Proceed to check selections and submit
+                if HarvestPlantSelected and HarvestPlantSelected ~= "None" then
+                    pcall(function()
+                        local prompt = findSubmitPrompt()
+
+                        if not prompt then
+                            if HarvestParagraph then
+                                HarvestParagraph:Set({
+                                    Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
+                                    Content = "Status: High Tide Active! Waiting for 'Submit Plant' structure..."
+                                })
+                            end
+                            return
+                        end
+
+                        local character  = LocalPlayer.Character
+                        local backpack   = LocalPlayer:FindFirstChild("Backpack")
+                        local foundPlant = false
+                        local searchName = tostring(HarvestPlantSelected):lower()
 
                     if character and backpack then
                         for _, item in ipairs(character:GetChildren()) do
@@ -113,7 +145,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                             if HarvestParagraph then
                                 HarvestParagraph:Set({
                                     Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
-                                    Content = "Status: Paused (Out of chosen plant...)"
+                                    Content = "Status: High Tide Active! Paused (Out of chosen plant...)"
                                 })
                             end
                             task.wait(1)
@@ -121,23 +153,31 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                         end
                     end
 
-                    if foundPlant and prompt then
-                        if HarvestParagraph then
-                            HarvestParagraph:Set({
-                                Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
-                                Content = "Status: Interacting with Submit Prompt..."
-                            })
-                        end
+                        if foundPlant and prompt then
+                            if HarvestParagraph then
+                                HarvestParagraph:Set({
+                                    Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
+                                    Content = "Status: SUBMITTING - High Tide Harvest Active!"
+                                })
+                            end
 
-                        fireproximityprompt(prompt, 1)
-                        task.wait(0.2)
+                            fireproximityprompt(prompt, 1)
+                            task.wait(0.2)
+                        end
+                    end)
+                else
+                    if HarvestParagraph then
+                        HarvestParagraph:Set({
+                            Title   = "Selected Plant: None",
+                            Content = "Status: High Tide is Active but no plant is selected!"
+                        })
                     end
-                end)
+                end
             else
                 if HarvestParagraph then
                     HarvestParagraph:Set({
                         Title   = "Selected Plant: " .. tostring(HarvestPlantSelected or "None"),
-                        Content = "Status: Idle / Off (Waiting for High Tide Harvest)"
+                        Content = "Status: Idle / Off"
                     })
                 end
             end
