@@ -8,7 +8,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
 
     -- ===================== STATE =====================
     local AutoSubmitPlantsEnabled  = false
-    local AutoTakeFruitsEnabled    = false -- New state variable
     local HarvestPlantSelected     = nil
     local SubmitSpeedDelay         = 1.0
     local HarvestParagraph         = nil
@@ -59,107 +58,12 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         return nil
     end
 
-    -- Helper to find Georgia's Talk ProximityPrompt
-    local function findGeorgiaPrompt()
-        for _, desc in ipairs(Workspace:GetDescendants()) do
-            if desc:IsA("ProximityPrompt") and desc.ActionText == "Talk" and desc.Parent and desc.Parent.Name == "Georgia" then
-                return desc
-            end
-            -- Fallback if the parent isn't named Georgia but the prompt text matches
-            if desc:IsA("ProximityPrompt") and desc.ActionText == "Talk" and desc.Parent and desc.Parent:FindFirstChild("Georgia") then
-                return desc
-            end
-        end
-        -- General fallback for any "Talk" prompt near the event area if structure names differ
-        for _, desc in ipairs(Workspace:GetDescendants()) do
-            if desc:IsA("ProximityPrompt") and desc.ActionText == "Talk" then
-                return desc
-            end
-        end
-        return nil
-    end
-    
-    -- Returns true only while High Tide Harvest is ACTIVE
-    local function isHighTideHarvestRunning()
-        local PlayerGui = LocalPlayer:FindFirstChild("PlayerGui")
-        if not PlayerGui then
-            return false
-        end
-
-        for _, obj in ipairs(PlayerGui:GetDescendants()) do
-            if obj:IsA("TextLabel") then
-                local txt = tostring(obj.Text)
-
-                -- Waiting timer
-                if txt:find("Next High Tide Harvest") then
-                    return false
-                end
-
-                -- Event has started
-                if txt:find("High Tide Harvest") and not txt:find("Next") then
-                    return true
-                end
-            end
-        end
-
-        return false
-    end
-
-    -- ===================== AUTO TAKE ALL FRUITS LOOP =====================
-    task.spawn(function()
-        while true do
-            task.wait(1.5) -- Reasonable loop delay to prevent spamming while waiting
-            
-            if AutoTakeFruitsEnabled then
-                if isHighTideHarvestRunning() then
-                    pcall(function()
-                        local prompt = findGeorgiaPrompt()
-                        if prompt then
-                            fireproximityprompt(prompt, 1)
-                            
-                            -- Handle selecting option #2 ["Take all my summer fruits"] if a dialogue UI pops up
-                            task.wait(0.3)
-                            local PlayerGui = LocalPlayer:FindFirstChild("PlayerGui")
-                            if PlayerGui then
-                                for _, obj in ipairs(PlayerGui:GetDescendants()) do
-                                    if obj:IsA("TextLabel") and (obj.Text:find("Take all my summer fruits") or obj.Text:find("Take all my summer")) then
-                                        -- Try to click the parent button of the text label
-                                        local button = obj:FindFirstAncestorOfClass("TextButton") or obj.Parent:IsA("TextButton") and obj.Parent
-                                        if button then
-                                            local virtualInput = game:GetService("VirtualInputManager")
-                                            virtualInput:SendMouseButtonEvent(button.AbsolutePosition.X + (button.AbsoluteSize.X / 2), button.AbsolutePosition.Y + (button.AbsoluteSize.Y / 2), 0, true, game, 1)
-                                            virtualInput:SendMouseButtonEvent(button.AbsolutePosition.X + (button.AbsoluteSize.X / 2), button.AbsolutePosition.Y + (button.AbsoluteSize.Y / 2), 0, false, game, 1)
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    end)
-                end
-            end
-        end
-    end)
-
     -- ===================== SUMMER HARVEST V2 LOOP =====================
     task.spawn(function()
         while true do
             task.wait(SubmitSpeedDelay)
 
-            if AutoSubmitPlantsEnabled
-            and HarvestPlantSelected
-            and HarvestPlantSelected ~= "None" then
-                -- Pause while High Tide is not active
-                if not isHighTideHarvestRunning() then
-                    if HarvestParagraph then
-                        HarvestParagraph:Set({
-                            Title = "Selected Plant: " .. tostring(HarvestPlantSelected),
-                            Content = "Status: Waiting for High Tide Harvest..."
-                            
-                        })
-                    end
-                    task.wait(1)
-                    continue
-                end
+            if AutoSubmitPlantsEnabled and HarvestPlantSelected and HarvestPlantSelected ~= "None" then
                 pcall(function()
                     local prompt = findSubmitPrompt()
 
@@ -179,7 +83,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                     local searchName = tostring(HarvestPlantSelected):lower()
 
                     if character and backpack then
-                        -- Check if currently equipped
                         for _, item in ipairs(character:GetChildren()) do
                             if item:IsA("Tool") and string.find(item.Name:lower(), searchName) then
                                 foundPlant = true
@@ -187,7 +90,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                             end
                         end
 
-                        -- Equip from Backpack if needed
                         if not foundPlant then
                             for _, item in ipairs(backpack:GetChildren()) do
                                 if item:IsA("Tool") and string.find(item.Name:lower(), searchName) then
@@ -205,7 +107,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                             end
                         end
 
-                        -- Handle scenario where the plant asset runs out
                         if not foundPlant then
                             local Humanoid = character:FindFirstChildOfClass("Humanoid")
                             if Humanoid then Humanoid:UnequipTools() end
@@ -220,16 +121,14 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                         end
                     end
 
-                    -- Fire interaction with the prompt directly
                     if foundPlant and prompt then
                         if HarvestParagraph then
                             HarvestParagraph:Set({
                                 Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
-                                Content = "Status: High Tide Active - Auto Submitting..."
+                                Content = "Status: Interacting with Submit Prompt..."
                             })
                         end
 
-                        -- Triggers the ProximityPrompt action directly
                         fireproximityprompt(prompt, 1)
                         task.wait(0.2)
                     end
@@ -255,16 +154,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         Content = "Status: Idle / Off"
     })
 
-    -- NEW TOGGLE FOR GEORGIA NPC FRUIT HARVEST
-    CampfireTab:CreateToggle({
-        Name         = "Auto Take All Summer Fruits",
-        CurrentValue = false,
-        Flag         = "eventAutoTakeSummerFruits",
-        Callback     = function(Value)
-            AutoTakeFruitsEnabled = Value
-        end,
-    })
-
     CampfireTab:CreateToggle({
         Name         = "Auto Submit Plant (High Tide)",
         CurrentValue = false,
@@ -284,14 +173,14 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             local choice = typeof(Option) == "table" and Option[1] or Option
             if choice and string.find(choice, "Fast") then
                 SubmitSpeedDelay = 0.5
+            else
+                SubmitSpeedDelay = 1.0
             end
         end,
     })
 
-    -- Forward declaration so the Input element below can interact with it
     local PlantDropdown 
 
-    -- Dynamic Dropdown
     PlantDropdown = CampfireTab:CreateDropdown({
         Name            = "Select Plant to Submit",
         Options         = plantDropdownPool,
@@ -313,7 +202,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         end,
     })
 
-    -- Search Box placed AFTER the dropdown, tied directly to it
     CampfireTab:CreateInput({
         Name = "Search Plant",
         PlaceholderText = "Type here",
@@ -322,7 +210,6 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
             local query = tostring(Text):lower()
             local filteredPool = {}
 
-            -- Filter the main list based on query
             if query == "" then
                 filteredPool = plantDropdownPool
             else
@@ -333,14 +220,134 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 end
             end
 
-            -- Automatically push "None" fallback if no search items match
             if #filteredPool == 0 then
                 table.insert(filteredPool, "No results found")
             end
 
-            -- Update Rayfield Dropdown elements dynamically
             if PlantDropdown then
                 PlantDropdown:Refresh(filteredPool, true)
+            end
+        end,
+    })
+
+    CampfireTab:CreateDivider()
+
+    -- ===================== INTEGRATED SUMMER SEED SHOP =====================
+    CampfireTab:CreateSection("Summer Seed Shop")
+
+    local curEventName = "Summer Seed Stand"
+    local function getEventItems()
+        local dataTbl = require(ReplicatedStorage.Data.EventShopData)
+        local listItems = {}
+
+        for eventName, eventItems in pairs(dataTbl) do
+            if eventName == curEventName or eventName:match("Summer") then
+                curEventName = eventName
+                for itemName, itemData in pairs(eventItems) do
+                    local itemType = tostring(itemData.ItemType or "")
+                    local itemToType = itemName.." | "..itemType
+                    table.insert(listItems, itemToType)
+                end
+            end
+        end
+
+        return listItems
+    end
+
+    local allShopItems = getEventItems()
+    task.wait()
+
+    local autoBuyEventLookup = {}
+    local dropdown_eventShopItems = CampfireTab:CreateDropdown({
+        Name = "Select Items",
+        Options = allShopItems,
+        CurrentOption = {},
+        MultipleOptions = true,
+        Flag = "autoBuyEventShopItems",
+        Callback = function(Options)
+            autoBuyEventLookup = {}
+            if #Options > 0 then
+                for _, option in ipairs(Options) do
+                    local curItemName = option:match("^(.-)%s*|")
+                    if curItemName then
+                        autoBuyEventLookup[curItemName] = true
+                    end
+                end
+            end
+        end,
+    })
+
+    CampfireTab:CreateButton({
+        Name = "Clear Items Selection",
+        Callback = function()
+            dropdown_eventShopItems:Set({})
+            autoBuyEventLookup = {}
+        end,
+    })
+
+    local allowShopBuy = {"Summer Seed Stand", "Summer HarvestEvent"}
+    local autoBuyEventShopEnabled = false
+
+    CampfireTab:CreateToggle({
+        Name = "Auto Buy Summer Shop",
+        CurrentValue = false,
+        Flag = "autoBuyEventShop",
+        Callback = function(Value)
+            autoBuyEventShopEnabled = Value
+            
+            if autoBuyEventShopEnabled then
+                task.spawn(function()
+                    local dataService = require(ReplicatedStorage.Modules.DataService)
+                    
+                    while autoBuyEventShopEnabled do
+                        local listToBuy = dropdown_eventShopItems and dropdown_eventShopItems.CurrentOption or {}
+                        
+                        if #listToBuy == 0 then
+                            task.wait(1)
+                            continue
+                        end
+                        
+                        local playerData = dataService:GetData()
+                        local eventStock = playerData and playerData.EventShopStock
+                        
+                        if eventStock then
+                            for eventName, eventData in pairs(eventStock) do
+                                local isTargetEvent = (eventName == curEventName)
+                                local isAllowedFallback = false
+                                
+                                for _, allowedName in ipairs(allowShopBuy) do
+                                   if eventName == allowedName then
+                                       isAllowedFallback = true
+                                       break
+                                   end
+                                end
+                                
+                                if isTargetEvent or isAllowedFallback then
+                                    local stocks = eventData.Stocks
+                                    if stocks then
+                                        for itemName, stockData in pairs(stocks) do
+                                            local curStock = stockData.Stock
+                                            
+                                            if curStock and curStock > 0 and autoBuyEventLookup[itemName] then
+                                                for i = 1, curStock do
+                                                    if not autoBuyEventShopEnabled then break end
+                                                    
+                                                    local args = {
+                                                        [1] = itemName,
+                                                        [2] = eventName
+                                                    }
+                                                    ReplicatedStorage.GameEvents.BuyEventShopStock:FireServer(unpack(args))
+                                                    task.wait(0.15)
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                        task.wait(5)
+                    end
+                end)
             end
         end,
     })
