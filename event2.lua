@@ -77,7 +77,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 local timerText = getHighTideTimerText()
                 local isHighTideActive = true
                 
-                -- Checks string match against the new screenshot notifications
+                -- Checks string match against the screen notification text
                 if string.find(timerText, "not started yet") or 
                    string.find(timerText, "Next") or 
                    string.find(timerText, "Minutes") or 
@@ -86,13 +86,20 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 end
 
                 if not isHighTideActive then
+                    -- Forcefully stop tool actions by unequipping back to inventory
+                    local character = LocalPlayer.Character
+                    if character then
+                        local Humanoid = character:FindFirstChildOfClass("Humanoid")
+                        if Humanoid then Humanoid:UnequipTools() end
+                    end
+
                     if HarvestParagraph then
                         HarvestParagraph:Set({
                             Title   = "Selected Plant: " .. tostring(HarvestPlantSelected or "None"),
-                            Content = "Status: Paused (Waiting for High Tide Harvest to start...)"
+                            Content = "Status: STOPPED (Waiting for High Tide Harvest to start...)"
                         })
                     end
-                    task.wait(1) -- Slower loop sleep to optimize game performance while idle
+                    task.wait(1) -- Optimized loop frequency during downtime
                     continue
                 end
 
@@ -147,7 +154,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                                 if HarvestParagraph then
                                     HarvestParagraph:Set({
                                         Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
-                                        Content = "Status: High Tide Active! Paused (Out of chosen inventory plant...)"
+                                        Content = "Status: High Tide Active! Stopped (Out of chosen inventory plant...)"
                                     })
                                 end
                                 task.wait(1)
