@@ -58,9 +58,8 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
         return nil
     end
 
-    -- Helper to read the High Tide Event Timer Text
+    -- Helper to read the High Tide Event Timer Text from your game screen billboard
     local function getHighTideTimerText()
-        -- Direct pathing based on screenshot: Workspace -> Sign -> Part -> BillboardGui -> SummerHarvestTimer
         for _, desc in ipairs(Workspace:GetDescendants()) do
             if desc:IsA("TextLabel") and desc.Name == "SummerHarvestTimer" then
                 return desc.Text
@@ -78,8 +77,11 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                 local timerText = getHighTideTimerText()
                 local isHighTideActive = true
                 
-                -- If text mentions "Next" or counting down "Minutes", High Tide hasn't started yet
-                if string.find(timerText, "Next") or string.find(timerText, "Minutes") or string.find(timerText, "Seconds") then
+                -- Checks string match against the new screenshot notifications
+                if string.find(timerText, "not started yet") or 
+                   string.find(timerText, "Next") or 
+                   string.find(timerText, "Minutes") or 
+                   string.find(timerText, "Seconds") then
                     isHighTideActive = false
                 end
 
@@ -87,14 +89,14 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                     if HarvestParagraph then
                         HarvestParagraph:Set({
                             Title   = "Selected Plant: " .. tostring(HarvestPlantSelected or "None"),
-                            Content = "Status: Paused (Waiting for High Tide event to start...)"
+                            Content = "Status: Paused (Waiting for High Tide Harvest to start...)"
                         })
                     end
-                    task.wait(1) -- Idle slower while waiting for event
+                    task.wait(1) -- Slower loop sleep to optimize game performance while idle
                     continue
                 end
 
-                -- High Tide is Active! Proceed to check selections and submit
+                -- High Tide Harvest is running! Continue to processing code blocks
                 if HarvestPlantSelected and HarvestPlantSelected ~= "None" then
                     pcall(function()
                         local prompt = findSubmitPrompt()
@@ -103,7 +105,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                             if HarvestParagraph then
                                 HarvestParagraph:Set({
                                     Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
-                                    Content = "Status: High Tide Active! Waiting for 'Submit Plant' structure..."
+                                    Content = "Status: High Tide Active! Searching for Submit structural prompt..."
                                 })
                             end
                             return
@@ -114,50 +116,50 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                         local foundPlant = false
                         local searchName = tostring(HarvestPlantSelected):lower()
 
-                    if character and backpack then
-                        for _, item in ipairs(character:GetChildren()) do
-                            if item:IsA("Tool") and string.find(item.Name:lower(), searchName) then
-                                foundPlant = true
-                                break
-                            end
-                        end
-
-                        if not foundPlant then
-                            for _, item in ipairs(backpack:GetChildren()) do
+                        if character and backpack then
+                            for _, item in ipairs(character:GetChildren()) do
                                 if item:IsA("Tool") and string.find(item.Name:lower(), searchName) then
-                                    local name = item.Name:lower()
-                                    if not name:find("seed") and not name:find("sprinkler")
-                                        and not name:find("can") and not name:find("crate")
-                                        and not name:find("tool") and not name:find("pet")
-                                        and not name:find("egg") and not name:find("ticket") then
-                                        item.Parent = character
-                                        foundPlant  = true
-                                        task.wait(0.15)
-                                        break
+                                    foundPlant = true
+                                    break
+                                end
+                            end
+
+                            if not foundPlant then
+                                for _, item in ipairs(backpack:GetChildren()) do
+                                    if item:IsA("Tool") and string.find(item.Name:lower(), searchName) then
+                                        local name = item.Name:lower()
+                                        if not name:find("seed") and not name:find("sprinkler")
+                                            and not name:find("can") and not name:find("crate")
+                                            and not name:find("tool") and not name:find("pet")
+                                            and not name:find("egg") and not name:find("ticket") then
+                                            item.Parent = character
+                                            foundPlant  = true
+                                            task.wait(0.15)
+                                            break
+                                        end
                                     end
                                 end
                             end
-                        end
 
-                        if not foundPlant then
-                            local Humanoid = character:FindFirstChildOfClass("Humanoid")
-                            if Humanoid then Humanoid:UnequipTools() end
-                            if HarvestParagraph then
-                                HarvestParagraph:Set({
-                                    Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
-                                    Content = "Status: High Tide Active! Paused (Out of chosen plant...)"
-                                })
+                            if not foundPlant then
+                                local Humanoid = character:FindFirstChildOfClass("Humanoid")
+                                if Humanoid then Humanoid:UnequipTools() end
+                                if HarvestParagraph then
+                                    HarvestParagraph:Set({
+                                        Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
+                                        Content = "Status: High Tide Active! Paused (Out of chosen inventory plant...)"
+                                    })
+                                end
+                                task.wait(1)
+                                return
                             end
-                            task.wait(1)
-                            return
                         end
-                    end
 
                         if foundPlant and prompt then
                             if HarvestParagraph then
                                 HarvestParagraph:Set({
                                     Title   = "Selected Plant: " .. tostring(HarvestPlantSelected),
-                                    Content = "Status: SUBMITTING - High Tide Harvest Active!"
+                                    Content = "Status: SUBMITTING - High Tide Active!"
                                 })
                             end
 
@@ -169,7 +171,7 @@ function M.init(Rayfield, beastHubNotify, Window, myFunctions, reloadScript, bea
                     if HarvestParagraph then
                         HarvestParagraph:Set({
                             Title   = "Selected Plant: None",
-                            Content = "Status: High Tide is Active but no plant is selected!"
+                            Content = "Status: High Tide is Active! Please choose a plant tool to submit."
                         })
                     end
                 end
